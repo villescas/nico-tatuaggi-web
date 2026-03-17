@@ -1,0 +1,221 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+
+const PROJECT_ID = 'ozqtzx80';
+
+let perfil = {};
+
+try {
+  const queryArtist = encodeURIComponent('*[_type == "artist"][0] { name, "sections": sections[]{ title, text, imageLayout, "images": images[].asset->url } }');
+  const urlArtist = `https://${PROJECT_ID}.api.sanity.io/v2024-03-04/data/query/production?query=${queryArtist}`;
+  const resArtist = await fetch(urlArtist);
+  const dataArtist = await resArtist.json();
+  perfil = dataArtist.result || {};
+} catch (e) {
+  console.error("Error fetching profile:", e);
+}
+
+// Fallback Data if Sanity is empty
+if (!perfil.name) {
+    perfil = {
+        name: "Nico Tatuaggi",
+        sections: [
+            {
+                title: "Origins",
+                text: "I started my career in the streets of Buenos Aires, looking for perfection in every stroke. Today, I travel the world taking my art to the main capitals of Europe.",
+                images: ["https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&q=80&w=800"],
+                imageLayout: "right"
+            },
+            {
+                title: "The Style",
+                text: "My style is based on realism and microrealism, prioritizing contrast and the durability of the ink over time.",
+                images: ["https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&q=80&w=800"],
+                imageLayout: "left"
+            }
+        ]
+    }
+}
+---
+
+<Layout 
+  title="Nico Tatuaggi | The Artist"
+  description="Learn about the history, origins, and unique style of world-traveling tattoo artist Nico Tatuaggi."
+  image={perfil.sections && perfil.sections.length > 0 && perfil.sections[0].images && perfil.sections[0].images.length > 0 ? perfil.sections[0].images[0] : 'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&q=80&w=1200'}
+>
+  <Nav />
+  
+  <main class="w-full min-h-screen pt-32 pb-24 px-6 max-w-7xl mx-auto flex flex-col md:flex-row gap-16 relative">
+    
+    {/* Left Column: Fixed Navigation (Scrollspy concept) */}
+    <div class="hidden md:block w-1/4 sticky top-40 h-fit">
+        <h1 class="text-4xl lg:text-5xl font-black text-white uppercase tracking-tighter mb-8">{perfil.name}</h1>
+        <ul class="space-y-6 border-l border-tattoo-gold/20 pl-6">
+            {perfil.sections && perfil.sections.map((section, index) => {
+                const id = section.title.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                const isFirst = index === 0;
+                return (
+                    <li>
+                        <a href={`#${id}`} class={`text-xs tracking-[0.3em] uppercase hover:text-white transition-colors relative ${isFirst ? 'text-tattoo-gold before:content-[""] before:absolute before:-left-[29px] before:top-1/2 before:-translate-y-1/2 before:w-2 before:h-2 before:bg-tattoo-gold before:rounded-full' : 'text-tattoo-silver'}`}>
+                            {section.title}
+                        </a>
+                    </li>
+                );
+            })}
+        </ul>
+    </div>
+
+    {/* Right Column: Timeline Content */}
+    <div class="w-full md:w-3/4 space-y-32">
+        {/* Mobile Title */}
+        <h1 class="md:hidden text-4xl font-black text-white uppercase tracking-tighter mb-8">{perfil.name}</h1>
+
+        {perfil.sections && perfil.sections.map((section, index) => {
+            const id = section.title.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            const zIndex = (index + 1) * 10;
+            const isLeft = section.imageLayout === 'left';
+            
+            return (
+                <section id={id} class="artist-section scroll-mt-40 sticky top-0 h-fit min-h-screen bg-[#050505] pt-10 border-b border-tattoo-gold/10" style={`z-index: ${zIndex};`}>
+                    <h2 class="text-tattoo-gold text-sm tracking-[0.3em] uppercase mb-10 flex items-center gap-4">
+                        <span class="w-8 h-[1px] bg-tattoo-gold"></span> {section.title}
+                    </h2>
+                    
+                    <div class={`flex flex-col md:flex-row gap-12 ${isLeft ? 'md:flex-row-reverse' : ''} mb-20`}>
+                        {/* Text Content */}
+                        <div class="flex-1 prose prose-invert prose-p:text-tattoo-silver prose-p:font-light prose-p:leading-loose text-lg">
+                            {section.text && section.text.split('\n\n').map(p => <p>{p}</p>)}
+                        </div>
+
+                        {/* Images / Carousel */}
+                        {section.images && section.images.length > 0 && (
+                            <div class="flex-1 w-full relative group carousel-container overflow-hidden">
+                                <div class="carousel-track flex w-full h-[60vh] md:h-[70vh] transition-transform duration-500 ease-out">
+                                    {section.images.map((imgUrl) => (
+                                        <div class="carousel-slide min-w-full h-full flex-shrink-0">
+                                            <img src={imgUrl} alt={section.title} class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
+                                        </div>
+                                    ))}
+                                </div>
+                                
+                                {/* Carousel Controls (only show if > 1 image) */}
+                                {section.images.length > 1 && (
+                                    <>
+                                        <button class="carousel-prev absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/60 rounded-full flex items-center justify-center text-white border border-white/20 hover:bg-tattoo-gold hover:border-tattoo-gold transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-0 z-10">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                                        </button>
+                                        <button class="carousel-next absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/60 rounded-full flex items-center justify-center text-white border border-white/20 hover:bg-tattoo-gold hover:border-tattoo-gold transition-colors opacity-0 group-hover:opacity-100 z-10">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                                        </button>
+                                        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                                            {section.images.map((_, i) => (
+                                                <div class={`carousel-dot w-2 h-2 rounded-full transition-colors ${i === 0 ? 'bg-tattoo-gold' : 'bg-white/40'}`}></div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </section>
+            );
+        })}
+
+    </div>
+  </main>
+</Layout>
+
+<script>
+    // Simple Scrollspy logic
+    document.addEventListener('DOMContentLoaded', () => {
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.sticky ul li a');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('text-tattoo-gold', 'before:content-[""]', 'before:absolute', 'before:-left-[29px]', 'before:top-1/2', 'before:-translate-y-1/2', 'before:w-2', 'before:h-2', 'before:bg-tattoo-gold', 'before:rounded-full');
+                link.classList.add('text-tattoo-silver');
+                
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.remove('text-tattoo-silver');
+                    link.classList.add('text-tattoo-gold', 'before:content-[""]', 'before:absolute', 'before:-left-[29px]', 'before:top-1/2', 'before:-translate-y-1/2', 'before:w-2', 'before:h-2', 'before:bg-tattoo-gold', 'before:rounded-full');
+                }
+            });
+
+            // Smooth opacity fading for the stacked sections effect
+            const stickySections = document.querySelectorAll('section.artist-section');
+            stickySections.forEach((section, index) => {
+                const nextSection = stickySections[index + 1];
+                if (nextSection) {
+                    const nextTop = nextSection.getBoundingClientRect().top;
+                    // Fades out the current section as the next section climbs up the screen
+                    let progress = nextTop / (window.innerHeight * 0.85); 
+                    
+                    if (progress >= 0 && progress <= 1) {
+                        section.style.opacity = progress.toString();
+                    } else if (progress > 1) {
+                        section.style.opacity = '1';
+                    } else {
+                        section.style.opacity = '0';
+                    }
+                }
+            });
+        });
+
+        // Carousel Logic
+        const carousels = document.querySelectorAll('.carousel-container');
+        carousels.forEach(carousel => {
+            const track = carousel.querySelector('.carousel-track');
+            const slides = carousel.querySelectorAll('.carousel-slide');
+            const nextBtn = carousel.querySelector('.carousel-next');
+            const prevBtn = carousel.querySelector('.carousel-prev');
+            const dots = carousel.querySelectorAll('.carousel-dot');
+            
+            if (!track || slides.length <= 1) return;
+
+            let currentIndex = 0;
+
+            const updateCarousel = () => {
+                track.style.transform = `translateX(-${currentIndex * 100}%)`;
+                
+                // Update dots
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('bg-tattoo-gold', index === currentIndex);
+                    dot.classList.toggle('bg-white/40', index !== currentIndex);
+                });
+
+                // Update button states
+                if (prevBtn) prevBtn.disabled = currentIndex === 0;
+                if (nextBtn) nextBtn.disabled = currentIndex === slides.length - 1;
+            };
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    if (currentIndex < slides.length - 1) {
+                        currentIndex++;
+                        updateCarousel();
+                    }
+                });
+            }
+
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    if (currentIndex > 0) {
+                        currentIndex--;
+                        updateCarousel();
+                    }
+                });
+            }
+        });
+    });
+</script>

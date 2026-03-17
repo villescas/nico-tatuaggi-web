@@ -1,0 +1,30 @@
+---
+// src/pages/index.astro
+// Este archivo redirige automáticamente a los visitantes
+
+const acceptLanguage = Astro.request.headers.get('accept-language') || '';
+// Algunos providers de hosting (como Vercel/Netlify) exponen headers de país.
+const countryInfo = Astro.request.headers.get('x-vercel-ip-country') || Astro.request.headers.get('x-netlify-geo') || '';
+
+// Países hispanohablantes (códigos ISO 2-letras)
+const hispanohablantes = ['AR', 'BO', 'CL', 'CO', 'CR', 'CU', 'DO', 'EC', 'SV', 'GQ', 'GT', 'HN', 'MX', 'NI', 'PA', 'PY', 'PE', 'PR', 'ES', 'UY', 'VE'];
+
+let targetLang = 'en'; // Por defecto para el mundo entero
+
+// Check 1: ¿Viene de un país que habla español? (si el hosting lo permite)
+if (countryInfo) {
+    // Netlify envía un string codificado a veces, pero para simplificar asumimos Vercel/Netlify country code puro
+    const countryCode = typeof countryInfo === 'string' ? countryInfo.toUpperCase().trim() : '';
+    if (hispanohablantes.includes(countryCode)) {
+        targetLang = 'es';
+    }
+} else {
+    // Check 2: ¿El navegador está configurado explícitamente en español?
+    // accept-language ej: "es-AR,es;q=0.9,en;q=0.8"
+    if (acceptLanguage.startsWith('es') || acceptLanguage.includes(' es-') || acceptLanguage.includes(',es')) {
+        targetLang = 'es';
+    }
+}
+
+return Astro.redirect(`/${targetLang}`);
+---

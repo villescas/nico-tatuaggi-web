@@ -1,0 +1,215 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+
+const PROJECT_ID = 'ozqtzx80';
+
+let isAuthenticated = false;
+let authError = false;
+
+// Comprobamos la Autenticación SSR
+if (Astro.request.method === "POST") {
+    try {
+        const data = await Astro.request.formData();
+        const password = data.get("password");
+        const correctPassword = import.meta.env.ADMIN_PASSWORD || 'realismo2026';
+
+        if (password === correctPassword) {
+            isAuthenticated = true;
+        } else {
+            authError = true;
+        }
+    } catch (error) {
+        if (error instanceof Error) {
+            console.error(error.message);
+        }
+    }
+}
+
+// Fetch city requests and group by city (SOLO SI ESTÁ AUTENTICADO)
+let requestsByCity = {};
+let requestsTotal = 0;
+let sortedCities = [];
+
+if (isAuthenticated) {
+    try {
+        const query = encodeURIComponent('*[_type == "cityRequest"] { name, contact, city, _createdAt } | order(_createdAt desc)');
+        const url = `https://${PROJECT_ID}.api.sanity.io/v2024-03-04/data/query/production?query=${query}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        const requests = data.result || [];
+        requestsTotal = requests.length;
+
+        requests.forEach(req => {
+            const city = req.city || 'Desconocida';
+            if (!requestsByCity[city]) {
+                requestsByCity[city] = [];
+            }
+            requestsByCity[city].push(req);
+        });
+
+        sortedCities = Object.keys(requestsByCity).sort((a, b) => requestsByCity[b].length - requestsByCity[a].length);
+    } catch (e) {
+        console.error("Error fetching city requests:", e);
+    }
+}
+---
+<Layout title="Nico Tatuaggi | Pedidos">
+  <Nav />
+  
+  <main class="w-full min-h-screen pt-32 pb-24 px-6 max-w-5xl mx-auto flex flex-col justify-center">
+    {!isAuthenticated ? (
+        <div class="w-full max-w-md mx-auto p-10 border border-white/5 bg-[#080808] shadow-2xl">
+            <h1 class="text-2xl font-black text-white uppercase tracking-[0.2em] mb-2 text-center">Acceso Privado</h1>
+            <p class="text-white/40 text-[10px] tracking-[0.3em] uppercase text-center mb-8">Nico Tatuaggi Dashboard</p>
+            
+            <form method="POST" class="flex flex-col gap-6">
+                <div>
+                    <label class="block text-white/40 text-[10px] tracking-[0.3em] mb-2 uppercase">Contraseña de Administrador</label>
+                    <input type="password" name="password" required class="w-full bg-black border border-white/10 p-3 text-white focus:border-tattoo-gold focus:outline-none transition-colors placeholder:text-white/20 text-sm tracking-widest text-center">
+                </div>
+                
+                {authError && <p class="text-red-500 text-[10px] tracking-widest uppercase text-center">Contraseña Incorrecta</p>}
+                
+                <button type="submit" class="w-full bg-tattoo-gold text-black font-bold uppercase tracking-[0.2em] py-4 mt-2 hover:bg-white transition-colors duration-300 text-xs">
+                    Ingresar al Panel
+                </button>
+            </form>
+        </div>
+    ) : (
+        <div class="w-full animate-fade-in">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-black text-white uppercase tracking-[0.2em] mb-4">Dashboard Oculto</h1>
+                    <p class="text-white/50 text-xs tracking-[0.4em] uppercase">Gestión de Interesados</p>
+                </div>
+                <div class="flex flex-col items-end gap-2">
+                    <span class="text-tattoo-gold text-lg font-bold">{requestsTotal} Pedidos Totales</span>
+                    <button id="export-csv-btn" class="bg-tattoo-gold text-black px-6 py-2 text-xs uppercase tracking-[0.2em] font-bold hover:bg-white transition-colors">
+                        Descargar CSV Total
+                    </button>
+                </div>
+            </div>
+
+            {requestsTotal === 0 ? (
+                <div class="w-full border border-white/5 p-12 text-center text-white/40 uppercase tracking-[0.2em] text-sm">
+                    Aún no hay pedidos de ciudades.
+                </div>
+            ) : (
+                <div class="space-y-4">
+                    {sortedCities.map(city => (
+                        <div class="accordion-item bg-[#080808]/80 border border-white/5 relative overflow-hidden group hover:border-tattoo-gold/30 transition-colors duration-500 cursor-pointer">
+                            <div class="accordion-header p-6 flex justify-between items-center relative z-10 w-full">
+                                <div class="flex items-center gap-6">
+                                    <h2 class="text-xl font-bold text-white uppercase tracking-[0.2em]">{city}</h2>
+                                    <span class="bg-white/10 text-white/60 px-3 py-1 text-xs rounded-full">{requestsByCity[city].length} Usuarios</span>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <button class="export-city-btn bg-white/5 hover:bg-tattoo-gold hover:text-black text-white px-4 py-1 text-[10px] uppercase tracking-wider transition-colors z-20" data-city={city}>
+                                        CSV de esta ciudad
+                                    </button>
+                                    <div class="indicator text-tattoo-gold transition-transform duration-500 pointer-events-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-content h-0 overflow-hidden transition-all duration-500 ease-in-out opacity-0 px-6 pb-0">
+                                <div class="border-t border-white/10 pt-4 pb-6 mt-2">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {requestsByCity[city].map((req: any) => (
+                                            <div class="bg-black/40 p-4 border border-white/5 rounded-sm">
+                                                <p class="text-white text-sm font-bold uppercase tracking-wider truncate" title={req.name}>{req.name}</p>
+                                                <p class="text-tattoo-gold text-xs tracking-wider mt-1 truncate" title={req.contact}>{req.contact}</p>
+                                                <p class="text-white/30 text-[10px] mt-2 tracking-widest">{new Date(req._createdAt).toLocaleDateString()}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    )}
+  </main>
+</Layout>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Interacción Acordeón ---
+        const accordionItems = document.querySelectorAll('.accordion-item');
+        accordionItems.forEach(item => {
+            const header = item.querySelector('.accordion-header');
+            const content = item.querySelector('.accordion-content') as HTMLElement;
+            const indicator = item.querySelector('.indicator') as HTMLElement;
+
+            header?.addEventListener('click', (e) => {
+                // Prevenir cierre si hacen click en el botón de exportar de la cabecera
+                if((e.target as HTMLElement).tagName === 'BUTTON') return;
+
+                const isOpen = item.classList.contains('active');
+
+                // Si no estaba abierto, abrirlo
+                if (!isOpen) {
+                    item.classList.add('active');
+                    content.style.height = content.scrollHeight + 'px';
+                    content.classList.add('opacity-100');
+                    if(indicator) indicator.style.transform = 'rotate(180deg)';
+                    item.classList.add('border-tattoo-gold/50');
+                } else {
+                    item.classList.remove('active');
+                    content.style.height = '0px';
+                    content.classList.remove('opacity-100');
+                    if(indicator) indicator.style.transform = 'rotate(0deg)';
+                    item.classList.remove('border-tattoo-gold/50');
+                }
+            });
+        });
+
+        // --- Exportación CSV ---
+        const triggerDownload = (filename: string, text: string) => {
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('download', filename);
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        };
+
+        const generateCSVData = async (cityParam = null) => {
+             const btnTotal = document.getElementById('export-csv-btn') as HTMLButtonElement;
+             if(btnTotal) btnTotal.innerText = 'PROCESANDO...';
+
+             try {
+                // Llamamos a nuestro endpoint proxy en Astro (crearemos en /api/export.js)
+                const url = cityParam ? `/api/export?city=${encodeURIComponent(cityParam)}` : `/api/export`;
+                const response = await fetch(url);
+                if(!response.ok) throw new Error("Error fetching CSV data");
+                
+                const csvText = await response.text();
+                triggerDownload(cityParam ? `pedidos-${cityParam}.csv` : `todos-los-pedidos-tatuajes.csv`, csvText);
+             } catch (e) {
+                 alert("Hubo un error al descargar el CSV.");
+             } finally {
+                 if(btnTotal) btnTotal.innerText = 'DESCARGAR CSV TOTAL';
+             }
+        };
+
+        const exportTotalBtn = document.getElementById('export-csv-btn');
+        if (exportTotalBtn) {
+            exportTotalBtn.addEventListener('click', () => generateCSVData());
+        }
+
+        const exportCityBtns = document.querySelectorAll('.export-city-btn');
+        exportCityBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const target = e.currentTarget as HTMLElement;
+                const city = target.getAttribute('data-city');
+                if(city) generateCSVData(city);
+            });
+        });
+    });
+</script>

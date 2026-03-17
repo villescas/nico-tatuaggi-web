@@ -1,0 +1,108 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Tattoo from '../../components/Tattoo.astro';
+
+const PROJECT_ID = 'ozqtzx80';
+
+let tatuajes = [];
+
+try {
+  const queryPortfolio = encodeURIComponent('*[_type == "portfolio"] | order(_createdAt desc) { title, style, "mediaItems": media[]{ "url": asset->url, "mimeType": asset->mimeType }, "beforeUrl": beforeImage.asset->url }');
+  const urlPortfolio = `https://${PROJECT_ID}.api.sanity.io/v2024-03-04/data/query/production?query=${queryPortfolio}`;
+  const resPortfolio = await fetch(urlPortfolio);
+  const dataPortfolio = await resPortfolio.json();
+  tatuajes = dataPortfolio.result || [];
+} catch (e) {}
+
+// Fallback Data if Sanity is empty
+if (tatuajes.length === 0) {
+    tatuajes = [
+        { title: "Realistic Lion", style: "black_grey", mediaItems: [{url: "https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] },
+        { title: "Woman Face", style: "black_grey", mediaItems: [{url: "https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] },
+        { title: "Clock and Roses", style: "black_grey", mediaItems: [{url: "https://images.unsplash.com/photo-1590246814883-57832efa2629?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] },
+        { title: "Tiger", style: "color", mediaItems: [{url: "https://images.unsplash.com/photo-1562962230-16e4623d36e6?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] },
+        { title: "Japanese Dragon", style: "color", mediaItems: [{url: "https://images.unsplash.com/photo-1605369683796-01d81de54130?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] },
+        { title: "Wolf Cover Up", style: "cover_up", mediaItems: [{url: "https://images.unsplash.com/photo-1550684376-efcbd6e3f031?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] },
+        { title: "Skull", style: "black_grey", mediaItems: [{url: "https://images.unsplash.com/photo-1621252178972-2aa54ef84c33?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] },
+        { title: "Eye Microrealism", style: "color", mediaItems: [{url: "https://images.unsplash.com/photo-1565347878385-d7a8d78fe975?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] },
+        { title: "Flowers Cover Up", style: "cover_up", mediaItems: [{url: "https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] } 
+    ];
+}
+---
+
+<Layout 
+  title="Nico Tatuaggi | Portfolio Gallery"
+  description="Explore the full gallery of realism, color, and cover-up tattoos by Nico Tatuaggi."
+  image={tatuajes.length > 0 && tatuajes[0].mediaItems && tatuajes[0].mediaItems.length > 0 ? tatuajes[0].mediaItems[0].url : 'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&q=80&w=1200'}
+>
+  <Nav />
+  
+  <main class="w-full min-h-screen pt-32 pb-24 px-6 max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+        <h1 class="text-5xl md:text-6xl font-black text-white uppercase tracking-tighter mb-4">Portfolio</h1>
+        <p class="text-tattoo-gold text-sm tracking-[0.3em] uppercase max-w-2xl mx-auto">Explore the full gallery of works</p>
+    </div>
+
+    {/* Filtros visuales usando Alpine o simple CSS/JS vanilla */}
+    <div class="flex flex-wrap justify-center gap-4 mb-16 filter-buttons">
+        <button class="px-6 py-2 border border-tattoo-gold text-tattoo-gold hover:bg-tattoo-gold hover:text-black transition-colors text-xs tracking-widest uppercase active-filter" data-filter="all">All</button>
+        <button class="px-6 py-2 border border-tattoo-gold/30 text-tattoo-silver hover:border-tattoo-gold hover:text-tattoo-gold transition-colors text-xs tracking-widest uppercase" data-filter="black_grey">Black & Grey</button>
+        <button class="px-6 py-2 border border-tattoo-gold/30 text-tattoo-silver hover:border-tattoo-gold hover:text-tattoo-gold transition-colors text-xs tracking-widest uppercase" data-filter="color">Color</button>
+        <button class="px-6 py-2 border border-tattoo-gold/30 text-tattoo-silver hover:border-tattoo-gold hover:text-tattoo-gold transition-colors text-xs tracking-widest uppercase" data-filter="cover_up">Cover Up</button>
+    </div>
+
+    <div class="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 portfolio-grid">
+      {tatuajes.map((tatuaje) => (
+        <div class={`tattoo-item transition-all duration-500`} data-style={tatuaje.style}>
+            <Tattoo 
+            title={tatuaje.title} 
+            style={tatuaje.style} 
+            mediaItems={tatuaje.mediaItems} 
+            beforeUrl={tatuaje.beforeUrl}
+            />
+        </div>
+      ))}
+    </div>
+  </main>
+</Layout>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const buttons = document.querySelectorAll('.filter-buttons button');
+        const items = document.querySelectorAll('.tattoo-item');
+
+        buttons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Update active button styling
+                buttons.forEach(btn => {
+                    btn.classList.remove('border-tattoo-gold', 'text-tattoo-gold', 'bg-tattoo-gold', 'text-black', 'active-filter');
+                    btn.classList.add('border-tattoo-gold/30', 'text-tattoo-silver');
+                    // Reset to unselected base state, then we'll apply selected state below
+                });
+                
+                button.classList.remove('border-tattoo-gold/30', 'text-tattoo-silver');
+                button.classList.add('border-tattoo-gold', 'text-tattoo-gold', 'bg-tattoo-gold', 'text-black', 'active-filter'); // In a real scenario you might just want it gold border/text until hover, but this shows active state
+
+                const filterValue = button.getAttribute('data-filter');
+
+                items.forEach(item => {
+                    if (filterValue === 'all' || item.getAttribute('data-style') === filterValue) {
+                        item.style.display = 'block';
+                        // Small timeout to allow display:block to apply before animating opacity
+                        setTimeout(() => {
+                            item.style.opacity = '1';
+                            item.style.transform = 'scale(1)';
+                        }, 50);
+                    } else {
+                        item.style.opacity = '0';
+                        item.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                             item.style.display = 'none';
+                        }, 300); // Matches transition duration
+                    }
+                });
+            });
+        });
+    });
+</script>

@@ -1,0 +1,186 @@
+---
+const { pathname } = Astro.url;
+const currentLang = pathname.startsWith('/en') ? 'en' : 'es';
+
+const t = {
+  es: {
+    title: "¿A dónde debería ir?",
+    subtitle: "Pedí tu ciudad y enterate antes que nadie",
+    nameLabel: "Tu Nombre",
+    namePlaceholder: "Ej: Juan Pérez",
+    contactLabel: "Email",
+    contactPlaceholder: "Ej: juan@email.com",
+    cityLabel: "Ciudad que pedís",
+    cityPlaceholder: "Empezá a escribir tu ciudad...",
+    btnSubmit: "Pedir Ciudad",
+    btnSending: "ENVIANDO...",
+    msgSuccess: "¡PEDIDO ENVIADO CON ÉXITO!",
+    msgError: "HUBO UN ERROR. INTENTÁ DE NUEVO.",
+    invalidCity: "POR FAVOR, SELECCIONA UNA CIUDAD DE LA LISTA."
+  },
+  en: {
+    title: "Where should I go?",
+    subtitle: "Request your city and be the first to know",
+    nameLabel: "Your Name",
+    namePlaceholder: "Ex: John Doe",
+    contactLabel: "Email",
+    contactPlaceholder: "Ex: john@email.com",
+    cityLabel: "Requested City",
+    cityPlaceholder: "Start typing your city...",
+    btnSubmit: "Request City",
+    btnSending: "SENDING...",
+    msgSuccess: "REQUEST SENT SUCCESSFULLY!",
+    msgError: "THERE WAS AN ERROR. TRY AGAIN.",
+    invalidCity: "PLEASE SELECT A VALID CITY FROM THE LIST."
+  }
+};
+---
+<div class="w-full max-w-2xl mx-auto p-10 border border-white/5 bg-[#080808] hover:border-tattoo-gold/20 transition-colors duration-700">
+  <h2 class="text-2xl font-black text-white uppercase tracking-[0.3em] mb-3 text-center">
+    {t[currentLang].title}
+  </h2>
+  <p class="text-white/40 text-xs text-center mb-10 tracking-[0.4em] uppercase">
+    {t[currentLang].subtitle}
+  </p>
+  
+  <form id="city-form" class="flex flex-col gap-6" data-lang={currentLang}>
+    <div>
+      <label class="block text-white/40 text-xs tracking-[0.3em] mb-3 uppercase">{t[currentLang].nameLabel}</label>
+      <input type="text" name="name" required minlength="2" class="w-full bg-transparent border-b border-white/10 p-3 text-white focus:border-tattoo-gold focus:outline-none transition-colors placeholder:text-white/20 text-base font-light tracking-wider" placeholder={t[currentLang].namePlaceholder}>
+    </div>
+    
+    <div>
+      <label class="block text-white/40 text-xs tracking-[0.3em] mb-3 uppercase">{t[currentLang].contactLabel}</label>
+      <input type="email" name="contact" required class="w-full bg-transparent border-b border-white/10 p-3 text-white focus:border-tattoo-gold focus:outline-none transition-colors placeholder:text-white/20 text-base font-light tracking-wider" placeholder={t[currentLang].contactPlaceholder}>
+    </div>
+    
+    <div class="relative">
+      <label class="block text-white/40 text-xs tracking-[0.3em] mb-3 uppercase">{t[currentLang].cityLabel}</label>
+      <input type="text" id="city-input" autocomplete="off" required class="w-full bg-transparent border-b border-white/10 p-3 text-white focus:border-tattoo-gold focus:outline-none transition-colors placeholder:text-white/20 text-base font-light tracking-wider" placeholder={t[currentLang].cityPlaceholder}>
+      <input type="hidden" name="city" id="city-hidden" required>
+      <ul id="city-autocomplete-list" class="absolute z-50 w-full bg-[#111] border border-white/10 max-h-48 overflow-y-auto hidden mt-1 shadow-xl"></ul>
+    </div>
+    
+    <button id="submit-btn" type="submit" class="w-full bg-tattoo-gold text-black font-black uppercase tracking-[0.3em] py-5 mt-6 hover:bg-white hover:text-black transition-colors duration-500 text-sm">
+      {t[currentLang].btnSubmit}
+    </button>
+    <p id="form-message" class="hidden text-center mt-6 text-xs tracking-[0.3em] uppercase font-bold"></p>
+  </form>
+</div>
+
+<script>
+  const form = document.getElementById('city-form');
+  const btn = document.getElementById('submit-btn');
+  const msg = document.getElementById('form-message');
+  const cityInput = document.getElementById('city-input');
+  const cityHidden = document.getElementById('city-hidden');
+  const autocompleteList = document.getElementById('city-autocomplete-list');
+
+  const messages = {
+    es: { sending: 'ENVIANDO...', submit: 'PEDIR CIUDAD', success: '¡PEDIDO ENVIADO CON ÉXITO!', error: 'HUBO UN ERROR. INTENTÁ DE NUEVO.', invalidCity: 'POR FAVOR, SELECCIONA UNA CIUDAD DE LA LISTA.' },
+    en: { sending: 'SENDING...', submit: 'REQUEST CITY', success: 'REQUEST SENT SUCCESSFULLY!', error: 'THERE WAS AN ERROR. TRY AGAIN.', invalidCity: 'PLEASE SELECT A VALID CITY FROM THE LIST.' }
+  }
+
+  // --- AUTOCOMPLETE LOGIC (Nominatim API) ---
+  let timeoutId;
+  let isCitySelected = false;
+
+  cityInput.addEventListener('input', (e) => {
+      clearTimeout(timeoutId);
+      const query = e.target.value;
+      isCitySelected = false; // Reset verification on new input
+      cityHidden.value = '';
+
+      if (query.length < 3) {
+          autocompleteList.innerHTML = '';
+          autocompleteList.classList.add('hidden');
+          return;
+      }
+
+      timeoutId = setTimeout(async () => {
+          try {
+              // Nominatim API: Search for cities/towns
+              const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&featuretype=city,town,village&addressdetails=1&limit=5`, {
+                  headers: {
+                      'Accept-Language': form.getAttribute('data-lang') === 'en' ? 'en-US,en;q=0.9' : 'es-ES,es;q=0.9'
+                  }
+              });
+              const data = await res.json();
+              
+              autocompleteList.innerHTML = '';
+              if (data.length > 0) {
+                  data.forEach(place => {
+                      const li = document.createElement('li');
+                      li.className = 'px-4 py-3 text-sm text-white/80 hover:bg-tattoo-gold hover:text-black cursor-pointer transition-colors border-b border-white/5 last:border-none';
+                      li.textContent = place.display_name;
+                      
+                      li.addEventListener('click', () => {
+                          cityInput.value = place.display_name;
+                          cityHidden.value = place.display_name; // Store the validated city
+                          isCitySelected = true;
+                          autocompleteList.innerHTML = '';
+                          autocompleteList.classList.add('hidden');
+                      });
+                      autocompleteList.appendChild(li);
+                  });
+                  autocompleteList.classList.remove('hidden');
+              } else {
+                  autocompleteList.classList.add('hidden');
+              }
+          } catch (error) {
+              console.error("Autocomplete error:", error);
+          }
+      }, 500); // 500ms debounce
+  });
+
+  // Hide list if clicked outside
+  document.addEventListener('click', (e) => {
+      if (e.target !== cityInput && e.target !== autocompleteList) {
+          autocompleteList.classList.add('hidden');
+      }
+  });
+
+  // --- FORM SUBMIT LOGIC ---
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault(); 
+    const lang = form.getAttribute('data-lang');
+
+    // Block submission if city wasn't explicitly selected from the dropdown
+    if (!isCitySelected || !cityHidden.value) {
+        msg.innerText = messages[lang].invalidCity;
+        msg.classList.remove('hidden', 'text-tattoo-gold');
+        msg.classList.add('text-red-500');
+        return;
+    }
+    
+    btn.innerText = messages[lang].sending;
+    btn.disabled = true;
+
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+
+    try {
+      const res = await fetch('/api/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (res.ok) {
+        msg.innerText = messages[lang].success;
+        msg.classList.remove('hidden', 'text-red-500');
+        msg.classList.add('text-tattoo-gold');
+        form.reset(); 
+      } else {
+        throw new Error('Error al enviar');
+      }
+    } catch (error) {
+      msg.innerText = messages[lang].error;
+      msg.classList.remove('hidden', 'text-tattoo-gold');
+      msg.classList.add('text-red-500');
+    }
+
+    btn.innerText = messages[lang].submit;
+    btn.disabled = false;
+  });
+</script>

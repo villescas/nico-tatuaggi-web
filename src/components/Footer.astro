@@ -1,0 +1,56 @@
+---
+// src/components/Footer.astro
+
+const { pathname } = Astro.url;
+const currentLang = pathname.startsWith('/en') ? 'en' : 'es';
+
+const t = {
+    es: {
+        role: "Tattoo Artist | Especialista en Realismo",
+        care: "Cuidados"
+    },
+    en: {
+        role: "Tattoo Artist | Realism Specialist",
+        care: "Aftercare"
+    }
+};
+---
+
+<footer class="w-full bg-[#050505] border-t border-tattoo-gold/10 pt-16 pb-8 px-6 mt-12 relative overflow-hidden">
+  <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 relative z-10">
+    
+    {/* Left: Brand */}
+    <div class="text-center md:text-left">
+      <h3 class="text-tattoo-gold font-light text-2xl tracking-[0.4em] uppercase mb-2">Nico Tatuaggi</h3>
+      <p class="text-white/30 text-[10px] tracking-[0.3em] uppercase">{t[currentLang].role}</p>
+    </div>
+
+    {/* Center: Socials / Links */}
+    <div class="flex gap-10 items-center justify-center">
+      <a href="#" class="text-white/50 hover:text-white transition-colors flex items-center gap-3 text-xs tracking-[0.3em] uppercase">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+        <span class="hidden md:inline">Instagram</span>
+      </a>
+      <a href="#" class="text-white/50 hover:text-white transition-colors flex items-center gap-3 text-xs tracking-[0.3em] uppercase">
+         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+         <span class="hidden md:inline">WhatsApp</span>
+      </a>
+      <a href={`/${currentLang}/cuidados`} class="text-white/50 hover:text-white transition-colors text-xs tracking-[0.3em] uppercase">
+        {t[currentLang].care}
+      </a>
+    </div>
+
+    {/* Right: Created by EViL */}
+    <div class="text-center md:text-right mt-8 md:mt-0 group cursor-pointer">
+      <p class="text-white/30 text-[10px] tracking-widest uppercase mb-1">Developed & Designed by</p>
+      <div class="flex items-center justify-center md:justify-end gap-2">
+        <span class="text-white/80 font-black tracking-tighter text-xl group-hover:text-white transition-colors">EViL</span>
+        <div class="w-2 h-2 bg-tattoo-gold rounded-full animate-pulse"></div>
+      </div>
+    </div>
+    
+  </div>
+
+  {/* Subtle Background Element */}
+  <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-tattoo-gold/5 rounded-full blur-3xl pointer-events-none"></div>
+</footer>

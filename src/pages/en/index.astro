@@ -1,0 +1,186 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Destination from '../../components/destination.astro';
+import Tattoo from '../../components/Tattoo.astro';
+import CityForm from '../../components/CityForm.astro';
+import Nav from '../../components/Nav.astro';
+import MemePopup from '../../components/MemePopup.astro';
+
+const PROJECT_ID = 'ozqtzx80';
+
+// Fetch Data with Fallbacks
+let viajes = [];
+let tatuajes = [];
+let perfil = {};
+let popup = {};
+
+try {
+  // 1. Buscamos los Viajes
+  const queryViajes = encodeURIComponent('*[_type == "destination" && showOnWeb == true] | order(startDate asc) { city, country, startDate, endDate, studioName, studioLink }');
+  const urlViajes = `https://${PROJECT_ID}.api.sanity.io/v2024-03-04/data/query/production?query=${queryViajes}`;
+  const resViajes = await fetch(urlViajes);
+  const dataViajes = await resViajes.json();
+  viajes = dataViajes.result || [];
+
+  // 2. Buscamos el Portfolio
+  const queryPortfolio = encodeURIComponent('*[_type == "portfolio" && showOnWeb == true] | order(_createdAt desc) { title, style, "mediaItems": media[]{ "url": asset->url, "mimeType": asset->mimeType }, "beforeUrl": beforeImage.asset->url }[0...4]');
+  const urlPortfolio = `https://${PROJECT_ID}.api.sanity.io/v2024-03-04/data/query/production?query=${queryPortfolio}`;
+  const resPortfolio = await fetch(urlPortfolio);
+  const dataPortfolio = await resPortfolio.json();
+  tatuajes = dataPortfolio.result || [];
+
+  // 3. Buscamos el Profile
+  try {
+    const queryProfile = encodeURIComponent('*[_type == "profile"][0] { name, whatsapp, instagram, "heroUrl": heroBanner.asset->url }');
+    const urlProfile = `https://${PROJECT_ID}.api.sanity.io/v2024-03-04/data/query/production?query=${queryProfile}`;
+    const resProfile = await fetch(urlProfile);
+    const dataProfile = await resProfile.json();
+    perfil = dataProfile.result || {};
+  } catch(e) {}
+
+  // 4. Buscamos el Popup
+  try {
+    const queryPopup = encodeURIComponent('*[_type == "popup"][0] { popupActive, "popupImage": popupImage.asset->url, popupTitle, popupSubtitle }');
+    const urlPopup = `https://${PROJECT_ID}.api.sanity.io/v2024-03-04/data/query/production?query=${queryPopup}`;
+    const resPopup = await fetch(urlPopup);
+    const dataPopup = await resPopup.json();
+    popup = dataPopup.result || {};
+  } catch(e) {}
+
+} catch (e) {}
+
+// Fallback Data if Sanity is empty
+if (viajes.length === 0) {
+  const today = new Date();
+  const nextMonth = new Date(today);
+  nextMonth.setMonth(today.getMonth() + 1);
+  viajes = [
+    { city: "Buenos Aires", country: "Argentina", startDate: today.toISOString(), endDate: nextMonth.toISOString() },
+    { city: "Madrid", country: "Spain", startDate: "2026-05-10T00:00:00.000Z", endDate: "2026-05-20T00:00:00.000Z" }
+  ];
+}
+
+if (tatuajes.length === 0) {
+    tatuajes = [
+        { title: "Realistic Lion", style: "black_grey", mediaItems: [{url: "https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] },
+        { title: "Woman Face", style: "black_grey", mediaItems: [{url: "https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] },
+        { title: "Clock and Roses", style: "black_grey", mediaItems: [{url: "https://images.unsplash.com/photo-1590246814883-57832efa2629?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] },
+        { title: "Tiger", style: "color", mediaItems: [{url: "https://images.unsplash.com/photo-1562962230-16e4623d36e6?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] }
+    ];
+}
+
+if (!perfil.name) {
+    perfil = {
+        name: "Nico Tatuaggi",
+        whatsapp: "5491112345678",
+        instagram: "https://instagram.com/nicotatuaggi"
+    }
+}
+---
+
+<Layout 
+  title="Nico Tatuaggi | Realism Specialist"
+  description="High-precision body art that transforms your story into a unique masterpiece. Specialist in realism and cover-ups."
+  image={tatuajes.length > 0 && tatuajes[0].mediaItems && tatuajes[0].mediaItems.length > 0 ? tatuajes[0].mediaItems[0].url : 'https://images.unsplash.com/photo-1590246814883-57832efa2629?auto=format&fit=crop&q=80&w=1200'}
+>
+  {popup.popupActive && (
+    <MemePopup 
+      image={popup.popupImage} 
+      title={popup.popupTitle} 
+      subtitle={popup.popupSubtitle} 
+    />
+  )}
+  <Nav />
+  
+  {/* Hero Section */}
+  <section class="relative min-h-[90vh] flex flex-col items-center justify-center text-center px-6 pt-20 overflow-hidden">
+    {perfil.heroBannerUrl ? (
+      perfil.heroBannerMime && perfil.heroBannerMime.startsWith('video/') ? (
+        <video class="absolute inset-0 w-full h-full object-cover opacity-60" autoplay loop muted playsinline>
+          <source src={perfil.heroBannerUrl} type={perfil.heroBannerMime} />
+        </video>
+      ) : (
+        <div class="absolute inset-0 bg-cover bg-center opacity-60" style={`background-image: url('${perfil.heroBannerUrl}')`}></div>
+      )
+    ) : (
+      <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?auto=format&fit=crop&q=80&w=1920')] bg-cover bg-center opacity-40"></div>
+    )}
+    
+    {/* Dark Overlays for Text Contrast */}
+    <div class="absolute inset-0 bg-tattoo-black/60 mix-blend-multiply"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-tattoo-black via-tattoo-black/50 to-transparent"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-tattoo-black/80 via-transparent to-transparent"></div>
+    
+    <div class="relative z-10 w-full max-w-4xl mx-auto">
+        <h2 class="text-tattoo-gold text-sm md:text-lg font-black tracking-[0.4em] uppercase mb-6 drop-shadow-md">Tattoo Artist</h2>
+        <div class="mb-4 flex flex-col items-center">
+            <span class="text-white/60 text-sm md:text-base tracking-[0.4em] uppercase font-light mb-2">Specialist in</span>
+            <h1 class="text-5xl md:text-6xl lg:text-7xl font-black text-white uppercase tracking-tighter leading-none opacity-90 drop-shadow-2xl mt-2">
+                Realism
+            </h1>
+        </div>
+        <p class="text-tattoo-silver text-sm md:text-base tracking-widest max-w-2xl mx-auto mb-10 leading-loose">
+            HIGH-PRECISION BODY ART THAT TRANSFORMS YOUR STORY INTO A UNIQUE MASTERPIECE
+        </p>
+        
+        <div class="flex flex-col sm:flex-row gap-6 justify-center">
+            <a href="/en/galeria" class="bg-tattoo-gold text-black font-bold uppercase tracking-[0.2em] py-4 px-10 hover:bg-white transition-colors duration-300">
+                View Portfolio
+            </a>
+            <a href={`https://wa.me/${(perfil.whatsapp || '').replace('+', '')}?text=Hola%20Nico%2C%20estuve%20viendo%20tu%20portfolio%20web%20y%20me%20encantar%C3%ADa%20cotizar%20un%20tatuaje%20de%20realismo.`} target="_blank" class="border border-tattoo-gold/50 text-tattoo-gold hover:bg-tattoo-gold/10 font-bold uppercase tracking-[0.2em] py-4 px-10 transition-colors duration-300">
+                Book Appointment
+            </a>
+        </div>
+    </div>
+  </section>
+
+  {/* Current Location / Destinations */}
+  <section class="w-full max-w-5xl mx-auto px-6 py-24 border-t border-tattoo-gold/10">
+    <div class="flex flex-col items-center mb-16">
+        <h2 class="text-tattoo-gold text-sm tracking-[0.3em] uppercase mb-4">Upcoming Destinations</h2>
+        <h3 class="text-3xl text-white font-bold tracking-widest uppercase">Where to find me?</h3>
+    </div>
+    
+    <div class="flex flex-wrap justify-center gap-8">
+      {viajes.map((viaje) => (
+        <Destination 
+          city={viaje.city} 
+          country={viaje.country} 
+          startDate={viaje.startDate} 
+          endDate={viaje.endDate}
+          studioName={viaje.studioName}
+          studioLink={viaje.studioLink}
+        />
+      ))}
+    </div>
+  </section>
+
+  {/* Latest Work */}
+  <section class="w-full max-w-7xl mx-auto px-6 py-24 bg-[#080808]/50 border-y border-tattoo-gold/10">
+    <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+        <div>
+            <h2 class="text-tattoo-gold text-sm tracking-[0.3em] uppercase mb-4">Portfolio</h2>
+            <h3 class="text-3xl text-white font-bold tracking-widest uppercase">Latest Works</h3>
+        </div>
+        <a href="/en/galeria" class="text-tattoo-silver hover:text-tattoo-gold text-xs tracking-[0.2em] uppercase transition-colors flex items-center gap-2">
+            View Full Gallery <span>→</span>
+        </a>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {tatuajes.map((tatuaje) => (
+        <Tattoo 
+          title={tatuaje.title} 
+          style={tatuaje.style} 
+          mediaItems={tatuaje.mediaItems} 
+          beforeUrl={tatuaje.beforeUrl}
+        />
+      ))}
+    </div>
+  </section>
+
+  {/* Newsletter / Form */}
+  <section class="w-full max-w-4xl mx-auto px-6 pt-16 pb-8">
+    <CityForm />
+  </section>
+</Layout>

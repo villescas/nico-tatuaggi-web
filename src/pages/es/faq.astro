@@ -1,0 +1,123 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+
+const PROJECT_ID = 'ozqtzx80';
+
+// Fetch FAQ data from Sanity
+let faqData = null;
+try {
+  const query = encodeURIComponent('*[_type == "faq"][0] { faqs }');
+  const url = `https://${PROJECT_ID}.api.sanity.io/v2024-03-04/data/query/production?query=${query}`;
+  const res = await fetch(url);
+  const json = await res.json();
+  faqData = json.result || null;
+} catch (e) {
+  console.error("Error fetching FAQ from Sanity:", e);
+}
+
+// Fallback data if Sanity is empty
+const defaultFaqs = [
+  {
+    questionEs: "¿Dónde tatúas normalmente?",
+    answerEs: "Mi base operativa actual se divide principalmente entre **Reino Unido** (Londres y alrededores) y **Buenos Aires, Argentina**.\n\nSin embargo, mi agenda suele incluir temporadas en España, Italia y otras capitales europeas. Siempre publico mis tours oficiales en la sección principal de la web y en Instagram."
+  },
+  {
+    questionEs: "No vivo en UK ni ARG. ¿Haces Guest Spots?",
+    answerEs: "¡Por supuesto! Soy un artista nómada y constantemente estoy abriendo nuevas fechas en estudios internacionales.\n\nLa mejor manera de hacerme saber que quieres tatuarte conmigo es regresar a la página de inicio (Inicio) y usar el formulario dorado **\"Pedir Ciudad\"**. Yo reviso esa base de datos mensualmente para planificar mis próximos destinos en base a la demanda."
+  },
+  {
+    questionEs: "¿Cómo agendo una cita?",
+    answerEs: "Si me encuentro en tu ciudad o estoy próximo a ir (revisa la sección de 'Destinos'), el proceso es súper directo:\n\nEnvíame un mensaje de **WhatsApp** tocando el botón flotante en la web, detallando:\n\n- Tu idea (con imágenes de referencia si las tienes).\n- Tamaño aproximado en centímetros.\n- Zona del cuerpo donde lo quieres.\n\nCon esa información te cotizaré y coordinaremos el depósito para reservar tu cupo."
+  },
+  {
+    questionEs: "¿Haces diseños personalizados o usas plantillas?",
+    answerEs: "Mi especialidad es el **Realismo**. Esto significa que trabajo basándome en fotografías de alta calidad.\n\nNo busco recrear el tatuaje de alguien más, sino componer un diseño digital único (photobashing) a partir de tus ideas y mis referencias. El diseño final te lo presento el mismo día de la sesión para ajustarlo perfectamente a la anatomía de tu cuerpo."
+  }
+];
+
+const faqs = faqData?.faqs?.length > 0 ? faqData.faqs : defaultFaqs;
+
+// Convert Markdown-like text to HTML for simple line breaks and bold
+const parseText = (text) => {
+    if (!text) return '';
+    return text
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/- (.*?)(\n|$)/g, '<li>$1</li>'); // Simple list parsing
+};
+---
+
+<Layout title="Nico Tatuaggi | Preguntas Frecuentes">
+  <Nav />
+  
+  <main class="w-full min-h-screen pt-32 pb-24 px-6 max-w-4xl mx-auto">
+    <div class="text-center mb-24">
+        <h1 class="text-5xl md:text-6xl font-black text-white uppercase tracking-[0.2em] mb-4">Preguntas Frecuentes</h1>
+        <p class="text-white/50 text-xs tracking-[0.4em] uppercase max-w-2xl mx-auto">Todo lo que necesitas saber antes de agendar</p>
+    </div>
+
+    <div class="space-y-6">
+        {faqs.map((faq, index) => (
+            <div class="accordion-item bg-[#080808]/80 border border-white/5 relative overflow-hidden group hover:border-tattoo-gold/30 transition-colors duration-500 cursor-pointer">
+                <div class="accordion-header p-8 md:p-10 flex justify-between items-center relative z-10 w-full">
+                    <div class="flex items-center gap-6">
+                        <h2 class="text-lg md:text-xl font-bold text-white uppercase tracking-[0.2em]">{faq.questionEs}</h2>
+                    </div>
+                    <div class="indicator text-tattoo-gold transition-transform duration-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </div>
+                </div>
+                
+                <div class="accordion-content h-0 overflow-hidden transition-all duration-500 ease-in-out opacity-0 px-8 md:px-10 pb-0">
+                    <div class="text-white/60 font-light leading-loose space-y-6 text-sm md:text-base border-t border-white/10 pt-8 pb-10 faq-parsed-content">
+                        <p set:html={parseText(faq.answerEs)} />
+                    </div>
+                </div>
+            </div>
+        ))}
+    </div>
+    
+  </main>
+</Layout>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const accordionItems = document.querySelectorAll('.accordion-item');
+
+        accordionItems.forEach(item => {
+            const header = item.querySelector('.accordion-header');
+            const content = item.querySelector('.accordion-content');
+            const indicator = item.querySelector('.indicator');
+
+            header.addEventListener('click', () => {
+                const isOpen = item.classList.contains('active');
+
+                // Cerrar todos
+                accordionItems.forEach(otherItem => {
+                    otherItem.classList.remove('active');
+                    const otherContent = otherItem.querySelector('.accordion-content');
+                    const otherIndicator = otherItem.querySelector('.indicator');
+                    otherContent.style.height = '0px';
+                    otherContent.classList.remove('opacity-100');
+                    otherIndicator.style.transform = 'rotate(0deg)';
+                    otherItem.classList.remove('border-tattoo-gold/50');
+                });
+
+                // Si no estaba abierto, abrirlo
+                if (!isOpen) {
+                    item.classList.add('active');
+                    content.style.height = content.scrollHeight + 'px';
+                    content.classList.add('opacity-100');
+                    indicator.style.transform = 'rotate(180deg)';
+                    item.classList.add('border-tattoo-gold/50');
+                }
+            });
+        });
+        
+        // Abrir el primero por defecto
+        if(accordionItems.length > 0) {
+             accordionItems[0].querySelector('.accordion-header').click();
+        }
+    });
+</script>

@@ -1,0 +1,81 @@
+---
+// src/components/Nav.astro
+
+// Extraemos el lenguaje de la URL actual
+const { pathname } = Astro.url;
+const currentLang = pathname.startsWith('/en') ? 'en' : 'es';
+
+// Función para generar las URLs cambiando solo el idioma
+const getSwitcherUrl = (targetLang) => {
+  // Si estamos en /es/galeria y cambiamos a /en, la URL será /en/galeria
+  // Si la ruta no tiene idioma explícito (ej: /), redirigimos a /en o /es
+  if (pathname === '/') return `/${targetLang}`;
+  
+  const segments = pathname.split('/').filter(Boolean);
+  if (segments[0] === 'es' || segments[0] === 'en') {
+    segments[0] = targetLang;
+  } else {
+    segments.unshift(targetLang);
+  }
+  return `/${segments.join('/')}`;
+};
+
+// Rutas dinámicas según el idioma actual
+const langPrefix = `/${currentLang}`;
+---
+
+<nav class="absolute top-0 w-full z-50 px-8 py-8 flex items-center bg-transparent">
+  {/* Left: Logo */}
+  <div class="w-1/3 flex justify-start">
+    <a href={langPrefix} class="text-tattoo-gold font-bold text-xl tracking-[0.4em] uppercase whitespace-nowrap">
+      Nico Tatuaggi
+    </a>
+  </div>
+  
+  {/* Center: Links */}
+  <div class="w-1/3 hidden md:flex justify-center gap-10 nav-links">
+    <a href={`${langPrefix}/galeria`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">Portfolio</a>
+    <a href={`${langPrefix}/sobre-nico`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">El Artista</a>
+    <a href={`${langPrefix}/cuidados`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">Cuidados</a>
+    <a href={`${langPrefix}/faq`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">FAQ</a>
+  </div>
+  
+  {/* Right: Language Switcher & Mobile Menu */}
+  <div class="w-1/3 flex justify-end items-center gap-6">
+    <div class="flex items-center gap-3 text-[10px] tracking-[0.3em] uppercase font-bold">
+      {/* Lucide Globe Icon SVG */}
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/50"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+      <a href={getSwitcherUrl('es')} class={`transition-colors ${currentLang === 'es' ? 'text-white' : 'text-white/30 hover:text-white'}`}>
+        ES
+      </a>
+      <span class="text-white/20">|</span>
+      <a href={getSwitcherUrl('en')} class={`transition-colors ${currentLang === 'en' ? 'text-white' : 'text-white/30 hover:text-white'}`}>
+        EN
+      </a>
+    </div>
+
+    {/* Mobile Menu Button (Simple version for now) */}
+    <button class="md:hidden text-tattoo-gold">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+  </div>
+</nav>
+
+<script>
+  // Script para marcar el link activo
+  document.addEventListener('DOMContentLoaded', () => {
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.nav-item');
+    
+    navLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      // Coincidencia exacta o si estamos en /es/galeria y el link es /es/galeria
+      if (currentPath === href || (href !== '/' && href !== '/es' && href !== '/en' && currentPath.startsWith(href))) {
+        link.classList.remove('text-white/70', 'border-transparent');
+        link.classList.add('text-tattoo-gold', 'border-tattoo-gold', 'font-bold');
+      }
+    });
+  });
+</script>

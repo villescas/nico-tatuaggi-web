@@ -1,0 +1,92 @@
+---
+export interface Props {
+    image?: string;
+    title?: string;
+    subtitle?: string;
+}
+
+const { 
+    image = "/meme_bg.png", 
+    title = "Tatuadores buscan salida a la crisis y ya ofrecen sus cuerpos.", 
+    subtitle = "Crece el trabajo sexual masculino." 
+} = Astro.props;
+---
+<div id="meme-popup" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#050505]/95 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-700">
+    <div class="relative w-[85%] max-w-[380px] overflow-hidden border-2 border-tattoo-gold/50 scale-95 transition-transform duration-700 shadow-[0_0_50px_rgba(212,175,55,0.15)]" id="meme-modal">
+        
+        {/* Header Options */}
+        <div class="absolute top-0 right-0 w-full p-4 flex justify-end items-start z-20 bg-gradient-to-b from-black/80 to-transparent">
+            {/* Close Button */}
+            <button id="close-meme" class="text-white hover:text-tattoo-gold transition-colors p-2 bg-black/50 rounded-full hover:bg-black/80 backdrop-blur-md">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+        </div>
+
+        {/* Background Image */}
+        <div class="relative w-full aspect-[4/5] sm:aspect-[3/4] bg-black">
+            <img src={image} alt="Tattoo artist background" class="w-full h-full object-cover opacity-80" />
+            
+            {/* Dark gradient from bottom for text readability */}
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent flex flex-col justify-end">
+                
+                {/* News Area */}
+                <div class="w-full flex flex-col items-center text-center p-8 border-t border-tattoo-gold/30 bg-black/80 backdrop-blur-sm">
+                    {/* Headlines */}
+                    <h2 class="text-white font-black text-[20px] sm:text-[24px] uppercase leading-tight mb-4 tracking-[0.1em] drop-shadow-lg">
+                        <span class="text-tattoo-gold block mb-2 font-normal text-xs tracking-[0.3em]">ÚLTIMO MOMENTO</span>
+                        {title}
+                    </h2>
+                    
+                    {subtitle && (
+                        <h3 class="text-white/60 font-light text-[14px] sm:text-[16px] uppercase leading-relaxed tracking-widest border-t border-white/10 pt-4 w-full">
+                            {subtitle}
+                        </h3>
+                    )}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const popup = document.getElementById('meme-popup');
+        const modal = document.getElementById('meme-modal');
+        const closeBtn = document.getElementById('close-meme');
+
+        // Check session storage so it doesn't show up on every single navigation click during the same session
+        if (!sessionStorage.getItem('nico_meme_seen')) {
+            // Delay the popup slightly for dramatic effect
+            setTimeout(() => {
+                if(popup && modal) {
+                    popup.classList.remove('pointer-events-none', 'opacity-0');
+                    popup.classList.add('opacity-100');
+                    modal.classList.remove('scale-95');
+                    modal.classList.add('scale-100');
+                }
+            }, 1200);
+            
+            sessionStorage.setItem('nico_meme_seen', 'true');
+        }
+
+        const closePopup = () => {
+            if(popup && modal) {
+                popup.classList.remove('opacity-100');
+                popup.classList.add('opacity-0', 'pointer-events-none');
+                modal.classList.remove('scale-100');
+                modal.classList.add('scale-95');
+            }
+        };
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closePopup);
+        }
+        
+        // Close if clicking outside the modal
+        if (popup) {
+            popup.addEventListener('click', (e) => {
+                if (e.target === popup) closePopup();
+            });
+        }
+    });
+</script>
