@@ -68,7 +68,7 @@ if (!perfil.name) {
     {/* Right Column: Timeline Content */}
     <div class="w-full md:w-3/4 space-y-32">
         {/* Mobile Title */}
-        <h1 class="md:hidden text-4xl font-black text-white uppercase tracking-tighter mb-8">{perfil.name}</h1>
+        <h1 class="md:hidden text-center text-4xl font-black text-white uppercase tracking-tighter mb-8">{perfil.name}</h1>
 
         {perfil.sections && perfil.sections.map((section, index) => {
             const id = section.title.toLowerCase().replace(/[^a-z0-9]/g, '-');
@@ -90,7 +90,7 @@ if (!perfil.name) {
                         {/* Images / Carousel */}
                         {section.images && section.images.length > 0 && (
                             <div class="flex-1 w-full relative group carousel-container overflow-hidden">
-                                <div class="carousel-track flex w-full h-[60vh] md:h-[70vh] transition-transform duration-500 ease-out">
+                                <div class="carousel-track flex w-full h-[45vh] md:h-[70vh] transition-transform duration-500 ease-out">
                                     {section.images.map((imgUrl) => (
                                         <div class="carousel-slide min-w-full h-full flex-shrink-0">
                                             <img src={imgUrl} alt={section.title} class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
