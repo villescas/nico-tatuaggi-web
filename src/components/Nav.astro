@@ -26,14 +26,14 @@ const langPrefix = `/${currentLang}`;
 
 <nav class="absolute top-0 w-full z-50 px-4 md:px-8 py-6 md:py-8 flex items-center justify-between bg-transparent">
   {/* Left: Logo */}
-  <div class="flex justify-start">
+  <div class="flex-1 flex justify-start">
     <a href={langPrefix} class="text-tattoo-gold font-bold text-lg md:text-xl tracking-[0.3em] md:tracking-[0.4em] uppercase whitespace-nowrap">
       Nico Tatuaggi
     </a>
   </div>
   
   {/* Center: Links */}
-  <div class="hidden md:flex flex-1 justify-center gap-10 nav-links">
+  <div class="hidden md:flex flex-none justify-center gap-10 nav-links">
     <a href={`${langPrefix}/galeria`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">Portfolio</a>
     <a href={`${langPrefix}/sobre-nico`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">El Artista</a>
     <a href={`${langPrefix}/cuidados`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">Cuidados</a>
@@ -41,7 +41,7 @@ const langPrefix = `/${currentLang}`;
   </div>
   
   {/* Right: Language Switcher & Mobile Menu */}
-  <div class="flex justify-end items-center gap-4 md:gap-6">
+  <div class="flex-1 flex justify-end items-center gap-4 md:gap-6">
     <div class="flex items-center gap-2 md:gap-3 text-[10px] tracking-[0.3em] uppercase font-bold">
       {/* Lucide Globe Icon SVG */}
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/50"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
@@ -54,12 +54,25 @@ const langPrefix = `/${currentLang}`;
       </a>
     </div>
 
-    {/* Mobile Menu Button (Simple version for now) */}
-    <button class="md:hidden text-tattoo-gold">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    {/* Mobile Menu Button */}
+    <button id="mobile-menu-btn" class="md:hidden text-tattoo-gold z-[60] relative" aria-label="Toggle Menu">
+      <svg id="menu-icon-open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
       </svg>
+      <svg id="menu-icon-close" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 absolute inset-0 opacity-0 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
     </button>
+  </div>
+  
+  {/* Mobile Menu Overlay */}
+  <div id="mobile-menu" class="fixed inset-0 bg-[#050505]/98 backdrop-blur-xl z-50 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-500 scale-95 md:hidden">
+    <div class="flex flex-col items-center gap-10 w-full px-6">
+      <a href={`${langPrefix}/galeria`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">Portfolio</a>
+      <a href={`${langPrefix}/sobre-nico`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">El Artista</a>
+      <a href={`${langPrefix}/cuidados`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">Cuidados</a>
+      <a href={`${langPrefix}/faq`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">FAQ</a>
+    </div>
   </div>
 </nav>
 
@@ -77,5 +90,34 @@ const langPrefix = `/${currentLang}`;
         link.classList.add('text-tattoo-gold', 'border-tattoo-gold', 'font-bold');
       }
     });
+
+    // Mobile Menu Toggle Logic
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const iconOpen = document.getElementById('menu-icon-open');
+    const iconClose = document.getElementById('menu-icon-close');
+    let isMenuOpen = false;
+
+    if (mobileBtn && mobileMenu && iconOpen && iconClose) {
+      mobileBtn.addEventListener('click', () => {
+        isMenuOpen = !isMenuOpen;
+        
+        if (isMenuOpen) {
+          // Open menu
+          mobileMenu.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+          mobileMenu.classList.add('opacity-100', 'scale-100');
+          iconOpen.classList.replace('opacity-100', 'opacity-0');
+          iconClose.classList.replace('opacity-0', 'opacity-100');
+          document.body.style.overflow = 'hidden'; // Prevent scrolling background
+        } else {
+          // Close menu
+          mobileMenu.classList.remove('opacity-100', 'scale-100');
+          mobileMenu.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+          iconOpen.classList.replace('opacity-0', 'opacity-100');
+          iconClose.classList.replace('opacity-100', 'opacity-0');
+          document.body.style.overflow = '';
+        }
+      });
+    }
   });
 </script>

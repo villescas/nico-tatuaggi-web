@@ -1,0 +1,34 @@
+{
+  "kind": "singleType",
+  "collectionName": "popups",
+  "info": {
+    "singularName": "popup",
+    "pluralName": "popups",
+    "displayName": "Anuncio / Popup",
+    "description": "Activa o desactiva el anuncio flotante (Breaking News) en la página principal."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "popupActive": {
+      "type": "boolean",
+      "default": false
+    },
+    "popupTitle": {
+      "type": "string"
+    },
+    "popupSubtitle": {
+      "type": "string"
+    },
+    "popupImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    }
+  }
+}

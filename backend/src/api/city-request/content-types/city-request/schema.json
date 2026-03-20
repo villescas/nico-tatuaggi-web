@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "city-requests",
+  "info": {
+    "singularName": "city-request",
+    "pluralName": "city-requests",
+    "displayName": "Pedidos de Ciudades",
+    "description": "ATENCIÓN: Aquí llegan automáticamente los pedidos del formulario web. NO CREAR MANUALMENTE."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "contact": {
+      "type": "string",
+      "required": true
+    },
+    "city": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

@@ -2,21 +2,33 @@
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 
-const PROJECT_ID = 'ozqtzx80';
+const DIRECTUS_URL = import.meta.env.PUBLIC_DIRECTUS_URL || 'http://localhost:8055';
+const DIRECTUS_TOKEN = import.meta.env.DIRECTUS_API_TOKEN || '';
 
-// Fetch FAQ data from Sanity
+const fetchDirectus = async (endpoint, query = '?fields=*.*') => {
+  try {
+    const res = await fetch(`${DIRECTUS_URL}/items/${endpoint}${query}`, {
+      headers: DIRECTUS_TOKEN ? { Authorization: `Bearer ${DIRECTUS_TOKEN}` } : {}
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data;
+  } catch (e) {
+    return null;
+  }
+};
+
 let faqData = null;
 try {
-  const query = encodeURIComponent('*[_type == "faq"][0] { faqs }');
-  const url = `https://${PROJECT_ID}.api.sanity.io/v2024-03-04/data/query/production?query=${query}`;
-  const res = await fetch(url);
-  const json = await res.json();
-  faqData = json.result || null;
+  const rawFaq = await fetchDirectus('faq');
+  if (rawFaq) {
+      faqData = { faqs: rawFaq.faqs };
+  }
 } catch (e) {
-  console.error("Error fetching FAQ from Sanity:", e);
+  console.error("Error fetching FAQ from Directus:", e);
 }
 
-// Fallback data if Sanity is empty
+// Fallback data if Directus is empty
 const defaultFaqs = [
   {
     questionEn: "Where are you currently based?",

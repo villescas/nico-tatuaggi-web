@@ -1,0 +1,25 @@
+{
+  "kind": "singleType",
+  "collectionName": "artists",
+  "info": {
+    "singularName": "artist",
+    "pluralName": "artists",
+    "displayName": "El Artista (Biografía)",
+    "description": "Aquí modificas tu foto de perfil, cronología y fotos de tus viajes por el mundo."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "sections": {
+      "type": "component",
+      "repeatable": true,
+      "component": "layout.section"
+    }
+  }
+}

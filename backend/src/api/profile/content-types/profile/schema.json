@@ -1,0 +1,35 @@
+{
+  "kind": "singleType",
+  "collectionName": "profiles",
+  "info": {
+    "singularName": "profile",
+    "pluralName": "profiles",
+    "displayName": "Perfil y Contacto",
+    "description": "Tu perfil general. Edita tu nombre, Avatar, link de WhatsApp e Instagram Global, y el video de fondo (Hero)."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "whatsapp": {
+      "type": "string"
+    },
+    "instagram": {
+      "type": "string"
+    },
+    "heroBanner": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images",
+        "videos"
+      ]
+    }
+  }
+}

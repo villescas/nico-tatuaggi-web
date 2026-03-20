@@ -1,0 +1,29 @@
+{
+  "kind": "singleType",
+  "collectionName": "cares",
+  "info": {
+    "singularName": "care",
+    "pluralName": "cares",
+    "displayName": "Cuidados (Aftercare)",
+    "description": "Sección para agregar o modificar los pasos de curación del tatuaje."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "default": "Cuidados"
+    },
+    "subtitle": {
+      "type": "string",
+      "default": "Guía para la curación perfecta de tu tatuaje"
+    },
+    "steps": {
+      "type": "component",
+      "repeatable": true,
+      "component": "layout.care-step"
+    }
+  }
+}

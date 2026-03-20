@@ -3,19 +3,16 @@ export const prerender = false;
 export const POST = async ({ request }) => {
     try {
         const data = await request.json();
-        const token = import.meta.env.SANITY_API_TOKEN;
-        const projectId = 'ozqtzx80';
+        const token = import.meta.env.DIRECTUS_API_TOKEN;
+        const directusUrl = import.meta.env.PUBLIC_DIRECTUS_URL || 'http://localhost:8055';
 
-        const mutations = [{
-            create: {
-                _type: 'cityRequest',
-                name: data.name,
-                contact: data.contact,
-                city: data.city
-            }
-        }];
+        const payload = {
+            name: data.name,
+            contact: data.contact,
+            city: data.city
+        };
 
-        const url = `https://${projectId}.api.sanity.io/v2024-03-04/data/mutate/production`;
+        const url = `${directusUrl}/items/cityRequest`;
 
         const res = await fetch(url, {
             method: 'POST',
@@ -23,10 +20,8 @@ export const POST = async ({ request }) => {
                 'Content-type': 'application/json',
                 Authorization: `Bearer ${token}`
             },
-            body: JSON.stringify({ mutations })
+            body: JSON.stringify(payload)
         });
-
-        const respuestaSanity = await res.json();
 
         if (res.ok) {
             return new Response(JSON.stringify({ message: "Éxito" }), { status: 200 });

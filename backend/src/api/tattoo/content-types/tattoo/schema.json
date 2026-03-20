@@ -1,0 +1,55 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tattoos",
+  "info": {
+    "singularName": "tattoo",
+    "pluralName": "tattoos",
+    "displayName": "Trabajos (Portfolio)",
+    "description": "Tu galería principal. Sube fotos, videos (Reels) y etiquétalos por estilo (Realismo, Color, etc)."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "style": {
+      "type": "enumeration",
+      "enum": [
+        "black_grey",
+        "color",
+        "cover_up"
+      ],
+      "required": true
+    },
+    "showOnWeb": {
+      "type": "boolean",
+      "default": true
+    },
+    "videoUrl": {
+      "type": "text"
+    },
+    "media": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "beforeImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    }
+  }
+}

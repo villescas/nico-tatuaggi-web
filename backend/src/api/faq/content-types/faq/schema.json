@@ -1,0 +1,21 @@
+{
+  "kind": "singleType",
+  "collectionName": "faqs",
+  "info": {
+    "singularName": "faq",
+    "pluralName": "faqs",
+    "displayName": "Preguntas Frecuentes",
+    "description": "Preguntas y respuestas acordes a tu workflow para filtrar dudas básicas."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "faqs": {
+      "type": "component",
+      "repeatable": true,
+      "component": "layout.faq-item"
+    }
+  }
+}

@@ -1,6 +1,81 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
+
+const DIRECTUS_URL = import.meta.env.PUBLIC_DIRECTUS_URL || 'http://localhost:8055';
+const DIRECTUS_TOKEN = import.meta.env.DIRECTUS_API_TOKEN || '';
+
+const getAssetData = (obj) => {
+    if (!obj) return null;
+    if (typeof obj === 'string') return { id: obj, mime: null };
+    if (obj.directus_files_id) return { id: obj.directus_files_id.id || obj.directus_files_id, mime: obj.directus_files_id.type };
+    return { id: obj.id, mime: obj.type };
+};
+
+const getAssetUrl = (obj, params = '') => {
+    const data = getAssetData(obj);
+    if (!data || !data.id) return null;
+    return `${DIRECTUS_URL}/assets/${data.id}${params ? '?' + params : ''}`;
+};
+
+const fetchDirectus = async () => {
+  try {
+    const res = await fetch(`${DIRECTUS_URL}/items/care?fields=*.*`, {
+      headers: DIRECTUS_TOKEN ? { Authorization: `Bearer ${DIRECTUS_TOKEN}` } : {}
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data;
+  } catch (e) {
+    return null;
+  }
+};
+
+let careData = null;
+try {
+  careData = await fetchDirectus();
+} catch (e) {
+  console.error("Error fetching Care data from Directus", e);
+}
+
+// Fallbacks
+const pageTitle = careData?.title || "Cuidados";
+const pageSubtitle = careData?.subtitle || "Guía para la curación perfecta de tu tatuaje";
+const steps = careData?.steps && careData.steps.length > 0 ? careData.steps : [
+    {
+        title: "1. Lavado",
+        icon: "wash",
+        description: "➤ Retirar el film a las 2-3 horas de haber terminado la sesión.\n➤ Lavar la zona con agua tibia/fría y jabón neutro.\n➤ Secar con papel tissue.",
+        alertText: "Jabón Neutro",
+        image: { url: "https://images.unsplash.com/photo-1584820927508-0125fb0ab691?auto=format&fit=crop&q=80&w=800" }
+    },
+    {
+        title: "2. Hidratación",
+        icon: "hydrate",
+        description: "➤ A partir del 3er día, comenzar a aplicar una capa EXTREMADAMENTE FINA de crema.\n➤ Aplicar 2 a 3 veces al día.\n➤ Continuar hidratando por al menos 15 días.",
+        alertText: "Capa Fina",
+        image: { url: "https://images.unsplash.com/photo-1608248593856-121f1981180b?auto=format&fit=crop&q=80&w=800" }
+    },
+    {
+        title: "3. Prohibiciones",
+        icon: "avoid",
+        description: "➤ NO rascar, frotar ni arrancar las costras.\n➤ NO sumergir en piscinas o mar.\n➤ NO exponer al sol directo.",
+        alertText: "Evitar",
+        image: { url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=800" }
+    }
+];
+
+const renderIcon = (iconType) => {
+    switch(iconType) {
+        case 'hydrate':
+            return `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>`;
+        case 'avoid':
+            return `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" x2="19.07" y1="4.93" y2="19.07"/></svg>`;
+        case 'wash':
+        default:
+            return `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>`;
+    }
+};
 ---
 
 <Layout 
@@ -12,105 +87,47 @@ import Nav from '../../components/Nav.astro';
   
   <main class="w-full min-h-screen pt-32 pb-24 px-6 max-w-4xl mx-auto">
     <div class="text-center mb-24">
-        <h1 class="text-5xl md:text-6xl font-black text-white uppercase tracking-[0.2em] mb-4">Cuidados</h1>
-        <p class="text-white/50 text-xs tracking-[0.4em] uppercase max-w-2xl mx-auto">Guía para la curación perfecta de tu tatuaje</p>
+        <h1 class="text-5xl md:text-6xl font-black text-white uppercase tracking-[0.2em] mb-4">{pageTitle}</h1>
+        <p class="text-white/50 text-xs tracking-[0.4em] uppercase max-w-2xl mx-auto">{pageSubtitle}</p>
     </div>
 
     <div class="space-y-6">
-        {/* Paso 1 */}
-        <div class="accordion-item bg-[#080808]/80 border border-white/5 relative overflow-hidden group hover:border-tattoo-gold/30 transition-colors duration-500 cursor-pointer">
-            <div class="accordion-header p-8 md:p-10 flex justify-between items-center relative z-10 w-full">
-                <div class="flex items-center gap-6">
-                    <div class="text-tattoo-gold opacity-80">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
-                    </div>
-                    <h2 class="text-xl md:text-2xl font-bold text-white uppercase tracking-[0.3em]">1. Lavado</h2>
-                </div>
-                <div class="indicator text-tattoo-gold transition-transform duration-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                </div>
-            </div>
-            
-            <div class="accordion-content h-0 overflow-hidden transition-all duration-500 ease-in-out opacity-0 px-8 md:px-10 pb-0">
-                <div class="border-t border-white/10 pt-8 pb-10 flex flex-col md:flex-row gap-8 md:gap-12 items-start">
-                    <div class="text-white/60 font-light leading-loose space-y-6 text-sm md:text-base flex-1">
-                        <p>➤ Retirar el film a las 2-3 horas de haber terminado la sesión. (Si se colocó parche dérmico tipo Saniderm, dejarlo de 3 a 5 días según indicación).</p>
-                        <p>➤ Lavar la zona con agua tibia/fría y jabón neutro espacial para tatuajes o jabón de glicerina. Espumar en las manos y frotar suavemente el tatuaje hasta retirar restos de tinta, sangre o plasma.</p>
-                        <p>➤ Secar con papel tissue (rollo de cocina) dando pequeños toques, NUNCA arrastrando. Dejar respirar al aire unos 10-15 minutos.</p>
-                    </div>
-                    <div class="w-full md:w-2/5 aspect-video md:aspect-square lg:aspect-video overflow-hidden rounded-sm border border-white/5 relative group mt-4 md:mt-0 flex-shrink-0">
-                        <img src="https://images.unsplash.com/photo-1584820927508-0125fb0ab691?auto=format&fit=crop&q=80&w=800" alt="Lavado del tatuaje" class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" />
-                        <div class="absolute inset-0 bg-tattoo-gold/10 mix-blend-overlay group-hover:opacity-0 transition-opacity duration-500"></div>
-                        <div class="absolute top-4 right-4 bg-black/80 px-3 py-1 text-[9px] tracking-widest text-tattoo-gold uppercase pointer-events-none">Jabón Neutro</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        {steps.map((step, index) => {
+            const imageUrl = step.image ? getAssetUrl(step.image, 'width=800&quality=80&format=webp') : "https://images.unsplash.com/photo-1584820927508-0125fb0ab691?auto=format&fit=crop&q=80&w=800";
+            const paragraphs = step.description ? step.description.split('\n').filter(p => p.trim() !== '') : [];
 
-        {/* Paso 2 */}
-        <div class="accordion-item bg-[#080808]/80 border border-white/5 relative overflow-hidden group hover:border-tattoo-gold/30 transition-colors duration-500 cursor-pointer">
-            <div class="accordion-header p-8 md:p-10 flex justify-between items-center relative z-10 w-full">
-                <div class="flex items-center gap-6">
-                    <div class="text-tattoo-gold opacity-80">
-                         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+            return (
+                <div class="accordion-item bg-[#080808]/80 border border-white/5 relative overflow-hidden group hover:border-tattoo-gold/30 transition-colors duration-500 cursor-pointer">
+                    <div class="accordion-header p-8 md:p-10 flex justify-between items-center relative z-10 w-full">
+                        <div class="flex items-center gap-6">
+                            <div class="text-tattoo-gold opacity-80" set:html={renderIcon(step.icon)} />
+                            <h2 class="text-xl md:text-2xl font-bold text-white uppercase tracking-[0.3em]">{step.title}</h2>
+                        </div>
+                        <div class="indicator text-tattoo-gold transition-transform duration-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                        </div>
                     </div>
-                    <h2 class="text-xl md:text-2xl font-bold text-white uppercase tracking-[0.3em]">2. Hidratación</h2>
-                </div>
-                <div class="indicator text-tattoo-gold transition-transform duration-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                </div>
-            </div>
-            
-            <div class="accordion-content h-0 overflow-hidden transition-all duration-500 ease-in-out opacity-0 px-8 md:px-10 pb-0">
-                <div class="border-t border-white/10 pt-8 pb-10 flex flex-col md:flex-row gap-8 md:gap-12 items-start">
-                    <div class="w-full md:w-2/5 aspect-video md:aspect-square lg:aspect-[4/3] overflow-hidden rounded-sm border border-white/5 relative group mb-4 md:mb-0 md:order-1 flex-shrink-0">
-                        <img src="https://images.unsplash.com/photo-1608248593856-121f1981180b?auto=format&fit=crop&q=80&w=800" alt="Hidratación del tatuaje" class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" />
-                        <div class="absolute inset-0 bg-tattoo-gold/10 mix-blend-overlay group-hover:opacity-0 transition-opacity duration-500"></div>
-                        <div class="absolute top-4 left-4 bg-black/80 px-3 py-1 text-[9px] tracking-widest text-tattoo-gold uppercase pointer-events-none">Capa Fina</div>
-                    </div>
-                    <div class="text-white/60 font-light leading-loose space-y-6 text-sm md:text-base flex-1 md:order-2">
-                        <p>➤ A partir del 3er día (o luego de retirar el parche), comenzar a aplicar una capa EXTREMADAMENTE FINA de crema recomendada para tatuajes (evitar Vaselina, cremas perfumadas o con alcohol).</p>
-                        <p>➤ Aplicar 2 a 3 veces al día, solo cuando el tatuaje se sienta seco o tire. El exceso de crema ahoga el tatuaje, genera granitos y produce pérdida de color.</p>
-                        <p>➤ Continuar hidratando por al menos 15 días.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {/* Paso 3 */}
-        <div class="accordion-item bg-[#080808]/80 border border-white/5 relative overflow-hidden group hover:border-tattoo-gold/30 transition-colors duration-500 cursor-pointer">
-            <div class="accordion-header p-8 md:p-10 flex justify-between items-center relative z-10 w-full">
-                <div class="flex items-center gap-6">
-                    <div class="text-tattoo-gold opacity-80">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" x2="19.07" y1="4.93" y2="19.07"/></svg>
-                    </div>
-                    <h2 class="text-xl md:text-2xl font-bold text-white uppercase tracking-[0.3em]">3. Prohibiciones</h2>
-                </div>
-                <div class="indicator text-tattoo-gold transition-transform duration-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                </div>
-            </div>
-            
-            <div class="accordion-content h-0 overflow-hidden transition-all duration-500 ease-in-out opacity-0 px-8 md:px-10 pb-0">
-                <div class="border-t border-white/10 pt-8 pb-10 flex flex-col md:flex-row gap-8 md:gap-12 items-start">
-                    <ul class="text-white/60 font-light leading-loose space-y-4 text-sm md:text-base list-none flex-1">
-                        <li class="pl-4 relative before:content-[''] before:absolute before:left-0 before:top-3 before:w-1.5 before:h-1.5 before:bg-tattoo-gold before:rounded-full">NO rascar, frotar ni arrancar las costras o pieles que se desprendan.</li>
-                        <li class="pl-4 relative before:content-[''] before:absolute before:left-0 before:top-3 before:w-1.5 before:h-1.5 before:bg-tattoo-gold before:rounded-full">NO sumergir en piscinas, mar, lagos o bañeras durante 15-20 días (solo duchas rápidas).</li>
-                        <li class="pl-4 relative before:content-[''] before:absolute before:left-0 before:top-3 before:w-1.5 before:h-1.5 before:bg-tattoo-gold before:rounded-full">NO exponer al sol directo ni camas solares por 1 mes. Luego, usar SIEMPRE protector solar pantalla total.</li>
-                        <li class="pl-4 relative before:content-[''] before:absolute before:left-0 before:top-3 before:w-1.5 before:h-1.5 before:bg-tattoo-gold before:rounded-full">NO realizar ejercicio físico intenso o actividades que generen sudoración excesiva en la zona durante la primera semana.</li>
-                        <li class="pl-4 relative before:content-[''] before:absolute before:left-0 before:top-3 before:w-1.5 before:h-1.5 before:bg-tattoo-gold before:rounded-full">Evitar ropa ajustada que roce constantemente el tatuaje fresco.</li>
-                    </ul>
-                    <div class="w-full md:w-2/5 aspect-video md:aspect-[4/5] overflow-hidden rounded-sm border border-white/5 relative group mt-4 md:mt-0 flex-shrink-0">
-                        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=800" alt="Evitar sol y mar" class="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-90 transition-all duration-700 group-hover:scale-105" />
-                        <div class="absolute inset-0 bg-red-900/20 mix-blend-overlay group-hover:opacity-0 transition-opacity duration-500"></div>
-                        <div class="absolute top-4 right-4 bg-black/80 px-3 py-1 text-[9px] tracking-widest text-[#ff4444] uppercase pointer-events-none flex items-center gap-2">
-                             <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                            Evitar
+                    
+                    <div class="accordion-content h-0 overflow-hidden transition-all duration-500 ease-in-out opacity-0 px-8 md:px-10 pb-0">
+                        <div class="border-t border-white/10 pt-8 pb-10 flex flex-col md:flex-row gap-8 md:gap-12 items-start">
+                            <div class={`text-white/60 font-light leading-loose space-y-6 text-sm md:text-base flex-1 ${index % 2 !== 0 ? 'md:order-2' : ''}`}>
+                                {paragraphs.map(p => <p>{p}</p>)}
+                            </div>
+                            <div class={`w-full md:w-2/5 aspect-video overflow-hidden rounded-sm border border-white/5 relative group mt-4 md:mt-0 flex-shrink-0 ${index % 2 !== 0 ? 'md:order-1 mb-4 md:mb-0' : ''}`}>
+                                <img src={imageUrl} alt={step.title} class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" />
+                                <div class={`absolute inset-0 mix-blend-overlay group-hover:opacity-0 transition-opacity duration-500 ${step.icon === 'avoid' ? 'bg-red-900/20' : 'bg-tattoo-gold/10'}`}></div>
+                                {step.alertText && (
+                                    <div class={`absolute ${index % 2 !== 0 ? 'top-4 left-4' : 'top-4 right-4'} bg-black/80 px-3 py-1 text-[9px] tracking-widest uppercase pointer-events-none flex items-center gap-2 ${step.icon === 'avoid' ? 'text-[#ff4444]' : 'text-tattoo-gold'}`}>
+                                        {step.icon === 'avoid' && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>}
+                                        {step.alertText}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            );
+        })}
     </div>
     
     <div class="mt-20 text-center">

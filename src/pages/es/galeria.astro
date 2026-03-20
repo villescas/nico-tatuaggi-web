@@ -3,30 +3,64 @@ import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Tattoo from '../../components/Tattoo.astro';
 
-const PROJECT_ID = 'ozqtzx80';
+const DIRECTUS_URL = import.meta.env.PUBLIC_DIRECTUS_URL || 'http://200.58.127.97:8055';
+const DIRECTUS_TOKEN = import.meta.env.DIRECTUS_API_TOKEN || '';
+
+const getAssetData = (obj) => {
+    if (!obj) return null;
+    if (typeof obj === 'string') return { id: obj, mime: null };
+    if (obj.directus_files_id) return { id: obj.directus_files_id.id || obj.directus_files_id, mime: obj.directus_files_id.type };
+    return { id: obj.id, mime: obj.type };
+};
+
+const getAssetUrl = (obj, params = '') => {
+    const data = getAssetData(obj);
+    if (!data || !data.id) return null;
+    return `${DIRECTUS_URL}/assets/${data.id}${params ? '?' + params : ''}`;
+};
+
+const fetchDirectus = async (endpoint, query = '?fields=*.*') => {
+  try {
+    const res = await fetch(`${DIRECTUS_URL}/items/${endpoint}${query}`, {
+      headers: DIRECTUS_TOKEN ? { Authorization: `Bearer ${DIRECTUS_TOKEN}` } : {}
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data;
+  } catch (e) {
+    return null;
+  }
+};
 
 let tatuajes = [];
 
 try {
-  const queryPortfolio = encodeURIComponent('*[_type == "portfolio"] | order(_createdAt desc) { title, style, "mediaItems": media[]{ "url": asset->url, "mimeType": asset->mimeType }, "beforeUrl": beforeImage.asset->url }');
-  const urlPortfolio = `https://${PROJECT_ID}.api.sanity.io/v2024-03-04/data/query/production?query=${queryPortfolio}`;
-  const resPortfolio = await fetch(urlPortfolio);
-  const dataPortfolio = await resPortfolio.json();
-  tatuajes = dataPortfolio.result || [];
-} catch (e) {}
+  const rawTattoos = await fetchDirectus('tatuajes', '?limit=100&fields=*.*');
+  if (rawTattoos) {
+      tatuajes = rawTattoos.map(t => ({
+          titulo: t.titulo,
+          sede: t.sede,
+          imagenUrl: t.imagen_portada ? getAssetUrl(t.imagen_portada, 'width=600&quality=80&format=webp') : null,
+          linkVideo: t.link_video,
+          esVideo: t.es_video
+      }));
+  }
+} catch (e) {
+    console.error("Error fetching from Directus", e);
+}
 
-// Fallback Data if Sanity is empty
+// Fallback Data if Directus is empty
 if (tatuajes.length === 0) {
     tatuajes = [
-        { title: "León Realista", style: "black_grey", mediaItems: [{url: "https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] },
-        { title: "Rostro Mujer", style: "black_grey", mediaItems: [{url: "https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] },
-        { title: "Reloj y Rosas", style: "black_grey", mediaItems: [{url: "https://images.unsplash.com/photo-1590246814883-57832efa2629?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] },
-        { title: "Tigre", style: "color", mediaItems: [{url: "https://images.unsplash.com/photo-1562962230-16e4623d36e6?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] },
-        { title: "Dragón Japonés", style: "color", mediaItems: [{url: "https://images.unsplash.com/photo-1605369683796-01d81de54130?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] },
-        { title: "Lobo Cover Up", style: "cover_up", mediaItems: [{url: "https://images.unsplash.com/photo-1550684376-efcbd6e3f031?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] },
-        { title: "Cráneo", style: "black_grey", mediaItems: [{url: "https://images.unsplash.com/photo-1621252178972-2aa54ef84c33?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] },
-        { title: "Microrealismo Ojo", style: "color", mediaItems: [{url: "https://images.unsplash.com/photo-1565347878385-d7a8d78fe975?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] },
-        { title: "Flores Cover Up", style: "cover_up", mediaItems: [{url: "https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?auto=format&fit=crop&q=80&w=800", mimeType: "image/jpeg"}] }
+        { titulo: "León Realista", sede: "Londres", imagenUrl: "https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&q=80&w=800", esVideo: false },
+        { titulo: "Rostro Mujer", sede: "Buenos Aires", imagenUrl: "https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?auto=format&fit=crop&q=80&w=800", esVideo: false },
+        { titulo: "Reloj y Rosas", sede: "Londres", imagenUrl: "https://images.unsplash.com/photo-1590246814883-57832efa2629?auto=format&fit=crop&q=80&w=800", esVideo: false },
+        { titulo: "Tigre", sede: "Buenos Aires", imagenUrl: "https://images.unsplash.com/photo-1562962230-16e4623d36e6?auto=format&fit=crop&q=80&w=800", esVideo: false },
+        { titulo: "Dragón Japonés", sede: "Londres", imagenUrl: "https://images.unsplash.com/photo-1605369683796-01d81de54130?auto=format&fit=crop&q=80&w=800", esVideo: false },
+        { titulo: "Lobo Cover Up", sede: "Buenos Aires", imagenUrl: "https://images.unsplash.com/photo-1550684376-efcbd6e3f031?auto=format&fit=crop&q=80&w=800", esVideo: false },
+        { titulo: "Cráneo", sede: "Londres", imagenUrl: "https://images.unsplash.com/photo-1621252178972-2aa54ef84c33?auto=format&fit=crop&q=80&w=800", esVideo: false },
+        { titulo: "Microrealismo Ojo", sede: "Buenos Aires", imagenUrl: "https://images.unsplash.com/photo-1565347878385-d7a8d78fe975?auto=format&fit=crop&q=80&w=800", esVideo: false },
+        { titulo: "Flores Cover Up", sede: "Londres", imagenUrl: "https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?auto=format&fit=crop&q=80&w=800", esVideo: false }
     ];
 }
 ---
@@ -34,7 +68,7 @@ if (tatuajes.length === 0) {
 <Layout 
   title="Nico Tatuaggi | Portfolio Galería"
   description="Explora la galería completa de trabajos de realismo, color y cover-up de Nico Tatuaggi."
-  image={tatuajes.length > 0 && tatuajes[0].mediaItems && tatuajes[0].mediaItems.length > 0 ? tatuajes[0].mediaItems[0].url : 'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&q=80&w=1200'}
+  image={tatuajes.length > 0 && tatuajes[0].imagenUrl ? tatuajes[0].imagenUrl : 'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&q=80&w=1200'}
 >
   <Nav />
   
@@ -47,19 +81,19 @@ if (tatuajes.length === 0) {
     {/* Filtros visuales usando Alpine o simple CSS/JS vanilla */}
     <div class="flex flex-wrap justify-center gap-4 mb-16 filter-buttons">
         <button class="px-6 py-2 border border-tattoo-gold text-tattoo-gold hover:bg-tattoo-gold hover:text-black transition-colors text-xs tracking-widest uppercase active-filter" data-filter="all">Todos</button>
-        <button class="px-6 py-2 border border-tattoo-gold/30 text-tattoo-silver hover:border-tattoo-gold hover:text-tattoo-gold transition-colors text-xs tracking-widest uppercase" data-filter="black_grey">Black & Grey</button>
-        <button class="px-6 py-2 border border-tattoo-gold/30 text-tattoo-silver hover:border-tattoo-gold hover:text-tattoo-gold transition-colors text-xs tracking-widest uppercase" data-filter="color">Color</button>
-        <button class="px-6 py-2 border border-tattoo-gold/30 text-tattoo-silver hover:border-tattoo-gold hover:text-tattoo-gold transition-colors text-xs tracking-widest uppercase" data-filter="cover_up">Cover Up</button>
+        <button class="px-6 py-2 border border-tattoo-gold/30 text-tattoo-silver hover:border-tattoo-gold hover:text-tattoo-gold transition-colors text-xs tracking-widest uppercase" data-filter="Buenos Aires">Buenos Aires</button>
+        <button class="px-6 py-2 border border-tattoo-gold/30 text-tattoo-silver hover:border-tattoo-gold hover:text-tattoo-gold transition-colors text-xs tracking-widest uppercase" data-filter="Londres">Londres</button>
     </div>
 
     <div class="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 portfolio-grid">
       {tatuajes.map((tatuaje) => (
-        <div class={`tattoo-item transition-all duration-500`} data-style={tatuaje.style}>
+        <div class={`tattoo-item transition-all duration-500`} data-sede={tatuaje.sede}>
             <Tattoo 
-            title={tatuaje.title} 
-            style={tatuaje.style} 
-            mediaItems={tatuaje.mediaItems} 
-            beforeUrl={tatuaje.beforeUrl}
+            titulo={tatuaje.titulo} 
+            sede={tatuaje.sede} 
+            imagenUrl={tatuaje.imagenUrl} 
+            linkVideo={tatuaje.linkVideo}
+            esVideo={tatuaje.esVideo}
             />
         </div>
       ))}
@@ -87,7 +121,7 @@ if (tatuajes.length === 0) {
                 const filterValue = button.getAttribute('data-filter');
 
                 items.forEach(item => {
-                    if (filterValue === 'all' || item.getAttribute('data-style') === filterValue) {
+                    if (filterValue === 'all' || item.getAttribute('data-sede') === filterValue) {
                         item.style.display = 'block';
                         // Small timeout to allow display:block to apply before animating opacity
                         setTimeout(() => {

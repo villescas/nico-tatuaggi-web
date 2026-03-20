@@ -2,21 +2,55 @@
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 
-const PROJECT_ID = 'ozqtzx80';
+const DIRECTUS_URL = import.meta.env.PUBLIC_DIRECTUS_URL || 'http://localhost:8055';
+const DIRECTUS_TOKEN = import.meta.env.DIRECTUS_API_TOKEN || '';
+
+const getAssetData = (obj) => {
+    if (!obj) return null;
+    if (typeof obj === 'string') return { id: obj, mime: null };
+    if (obj.directus_files_id) return { id: obj.directus_files_id.id || obj.directus_files_id, mime: obj.directus_files_id.type };
+    return { id: obj.id, mime: obj.type };
+};
+
+const getAssetUrl = (obj, params = '') => {
+    const data = getAssetData(obj);
+    if (!data || !data.id) return null;
+    return `${DIRECTUS_URL}/assets/${data.id}${params ? '?' + params : ''}`;
+};
+
+const fetchDirectus = async (endpoint, query = '?fields=*.*') => {
+  try {
+    const res = await fetch(`${DIRECTUS_URL}/items/${endpoint}${query}`, {
+      headers: DIRECTUS_TOKEN ? { Authorization: `Bearer ${DIRECTUS_TOKEN}` } : {}
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data;
+  } catch (e) {
+    return null;
+  }
+};
 
 let perfil = {};
 
 try {
-  const queryArtist = encodeURIComponent('*[_type == "artist"][0] { name, "sections": sections[]{ title, text, imageLayout, "images": images[].asset->url } }');
-  const urlArtist = `https://${PROJECT_ID}.api.sanity.io/v2024-03-04/data/query/production?query=${queryArtist}`;
-  const resArtist = await fetch(urlArtist);
-  const dataArtist = await resArtist.json();
-  perfil = dataArtist.result || {};
+  const rawArtist = await fetchDirectus('artist');
+  if (rawArtist) {
+      perfil = {
+          name: rawArtist.name,
+          sections: rawArtist.sections ? rawArtist.sections.map(s => ({
+              title: s.title,
+              text: s.text,
+              imageLayout: s.imageLayout,
+              images: s.images ? s.images.map(img => getAssetUrl(img, 'width=1000&quality=80&format=webp')) : []
+          })) : []
+      };
+  }
 } catch (e) {
-  console.error("Error fetching profile:", e);
+  console.error("Error fetching profile from Directus:", e);
 }
 
-// Fallback Data if Sanity is empty
+// Fallback Data if Directus is empty
 if (!perfil.name) {
     perfil = {
         name: "Nico Tatuaggi",
@@ -68,7 +102,7 @@ if (!perfil.name) {
     {/* Right Column: Timeline Content */}
     <div class="w-full md:w-3/4 space-y-32">
         {/* Mobile Title */}
-        <h1 class="md:hidden text-4xl font-black text-white uppercase tracking-tighter mb-8">{perfil.name}</h1>
+        <h2 class="md:hidden text-4xl font-black text-white uppercase tracking-tighter mb-8">{perfil.name}</h2>
 
         {perfil.sections && perfil.sections.map((section, index) => {
             const id = section.title.toLowerCase().replace(/[^a-z0-9]/g, '-');

@@ -1,0 +1,42 @@
+{
+  "kind": "collectionType",
+  "collectionName": "destinations",
+  "info": {
+    "singularName": "destination",
+    "pluralName": "destinations",
+    "displayName": "Próximos Destinos",
+    "description": "Tus próximas fechas de viaje. Agrega la ciudad, el estudio y tu link de Instagram asociado."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "city": {
+      "type": "string",
+      "required": true
+    },
+    "country": {
+      "type": "string",
+      "required": true
+    },
+    "startDate": {
+      "type": "date",
+      "required": true
+    },
+    "endDate": {
+      "type": "date",
+      "required": true
+    },
+    "studioName": {
+      "type": "string"
+    },
+    "studioLink": {
+      "type": "string"
+    },
+    "showOnWeb": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

@@ -1,154 +1,107 @@
 ---
-const { title, style, mediaItems, beforeUrl } = Astro.props;
-// Ensure mediaItems is an array even if null or undefined is passed
-const safeMediaItems = Array.isArray(mediaItems) ? mediaItems : [];
-
-// Unique ID for the carousel logic
+const { titulo, imagenUrl, sede, linkVideo, esVideo } = Astro.props;
 const uniqueId = `tattoo-${Math.random().toString(36).substr(2, 9)}`;
-const isCoverUp = !!beforeUrl;
+
+const getEmbedUrl = (url) => {
+    if (!url) return null;
+    if (url.includes('instagram.com/reel/') || url.includes('instagram.com/p/')) {
+        const base = url.split('?')[0];
+        const cleanBase = base.endsWith('/') ? base.slice(0, -1) : base;
+        return `${cleanBase}/embed`;
+    }
+    if (url.includes('youtube.com/watch?v=')) {
+        const id = url.split('v=')[1].split('&')[0];
+        return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}`;
+    }
+    return url;
+};
+const embedUrl = esVideo ? getEmbedUrl(linkVideo) : null;
 ---
 
-<div class={`relative group overflow-hidden border border-tattoo-gold/20 hover:border-tattoo-gold transition-all duration-500 h-full w-full ${isCoverUp ? 'cursor-pointer' : ''}`} id={uniqueId}>
-  
+{/* 1. THUMBNAIL EN LA GRILLA */}
+<div class="relative group overflow-hidden border border-tattoo-gold/20 hover:border-tattoo-gold transition-all duration-500 h-full w-full cursor-pointer tattoo-trigger" data-target={`modal-${uniqueId}`}>
   <div class="relative w-full h-full aspect-[4/5] bg-black">
-    
-    {/* MEDIA CAROUSEL CONTAINER */}
-    <div class="media-carousel-track flex w-full h-full transition-transform duration-500 ease-out">
-      {safeMediaItems.length > 0 ? safeMediaItems.map((media) => (
-        <div class="media-slide min-w-full h-full flex-shrink-0 relative">
-            {media?.mimeType && media.mimeType.startsWith('video/') ? (
-                <video 
-                    src={media.url} 
-                    class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
-                    autoplay loop muted playsinline 
-                />
-            ) : (
-                <img 
-                    src={media.url} 
-                    alt={title} 
-                    class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 pointer-events-none" 
-                />
-            )}
-        </div>
-      )) : (
-        <div class="media-slide min-w-full h-full flex relative items-center justify-center bg-[#0a0a0a]">
-            <p class="text-white/20 text-xs tracking-widest uppercase">No media</p>
-        </div>
+      <img src={imagenUrl} alt={titulo} loading="lazy" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+      
+      {esVideo && embedUrl && (
+          <div class="absolute top-4 left-4 z-20 bg-white/10 backdrop-blur-md rounded-full p-2 border border-white/20 shadow-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </div>
       )}
-    </div>
-
-    {/* CAROUSEL CONTROLS */}
-    {safeMediaItems.length > 1 && (
-        <>
-            <button class="tattoo-prev absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 bg-black/60 rounded-full flex items-center justify-center text-white border border-white/20 hover:bg-tattoo-gold hover:border-tattoo-gold transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-0 z-30" onclick="event.stopPropagation()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-            </button>
-            <button class="tattoo-next absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 md:w-10 md:h-10 bg-black/60 rounded-full flex items-center justify-center text-white border border-white/20 hover:bg-tattoo-gold hover:border-tattoo-gold transition-colors opacity-0 group-hover:opacity-100 z-30" onclick="event.stopPropagation()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-            </button>
-            <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
-                {safeMediaItems.map((_, i) => (
-                    <div class={`tattoo-dot w-1.5 h-1.5 rounded-full transition-colors ${i === 0 ? 'bg-tattoo-gold' : 'bg-white/40'}`}></div>
-                ))}
-            </div>
-        </>
-    )}
-    
-    {/* BEFORE TATTOO PARA COVER-UPS (Capa superior, se oculta al hacer click) */}
-    {isCoverUp && (
-      <>
-        <div class="cover-up-layer absolute inset-0 w-full h-full z-40 transition-opacity duration-700 pointer-events-none">
-           <img 
-            src={beforeUrl} 
-            alt={title + " - Antes"} 
-            class="w-full h-full object-cover opacity-90" 
-          />
-        </div>
-        
-        {/* Indicador de Cover Up */}
-        <div class="indicator absolute top-4 right-4 z-50 bg-tattoo-gold text-black text-[9px] font-bold tracking-widest uppercase px-3 py-1 shadow-lg transition-all duration-300 pointer-events-none">
-            Click: Ver Después
-        </div>
-      </>
-    )}
-    
+      
+      {/* Title overlay */}
+      <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10">
+        <h4 class="text-white font-bold uppercase tracking-widest md:text-lg text-base drop-shadow-md">{titulo}</h4>
+        <p class="text-tattoo-gold text-xs tracking-[0.2em] mt-1 uppercase drop-shadow-md">{sede}</p>
+      </div>
   </div>
-  
-  <div class="absolute bottom-0 left-0 w-full bg-[#050505]/90 border-t border-tattoo-gold/30 p-4 translate-y-0 md:translate-y-full md:group-hover:translate-y-0 transition-transform duration-500 z-50 pointer-events-none">
-    <h4 class="text-tattoo-silver font-bold uppercase tracking-widest text-sm">{title}</h4>
-    <p class="text-tattoo-gold text-xs tracking-[0.2em] mt-1 uppercase">{style}</p>
-  </div>
-
 </div>
 
-<script is:inline define:vars={{ uniqueId, isCoverUp }}>
+{/* 2. LIGHTBOX MODAL (Oculto por defecto) */}
+<div id={`modal-${uniqueId}`} class="fixed inset-0 z-[100] bg-[#050505]/98 backdrop-blur-xl opacity-0 pointer-events-none transition-opacity duration-500 flex flex-col items-center justify-center">
+    
+    {/* Top Bar */}
+    <div class="absolute top-0 left-0 w-full p-4 md:p-6 flex justify-between items-center z-[110] bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
+        <div class="pointer-events-auto">
+            <h4 class="text-tattoo-gold font-bold uppercase tracking-widest text-lg md:text-xl drop-shadow-lg">{titulo}</h4>
+            <p class="text-white/60 text-xs tracking-[0.2em] mt-1 uppercase relative inline-block">
+                {sede}
+            </p>
+        </div>
+        <button class="modal-close pointer-events-auto text-white hover:text-tattoo-gold bg-white/5 hover:bg-white/10 rounded-full p-3 backdrop-blur-md transition-colors" aria-label="Cerrar media">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+    </div>
+
+    {/* Media Track */}
+    <div class="relative w-full h-[80vh] md:max-w-5xl md:h-[85vh] flex items-center justify-center overflow-hidden">
+        <div class="w-full h-full flex items-center justify-center p-4">
+            {esVideo && embedUrl ? (
+                <div class="w-full max-w-[400px] h-[80%] max-h-[700px] bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5">
+                    <iframe data-src={embedUrl} class="lazy-iframe w-full h-full border-none absolute inset-0" scrolling="no" allowtransparency="true" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                </div>
+            ) : (
+                <img src={imagenUrl} alt={titulo} loading="lazy" class="max-w-full max-h-full object-contain drop-shadow-2xl select-none" />
+            )}
+        </div>
+    </div>
+</div>
+
+<script is:inline define:vars={{ uniqueId }}>
   document.addEventListener('DOMContentLoaded', () => {
-      const container = document.getElementById(uniqueId);
-      if (!container) return;
+      const trigger = document.querySelector(`[data-target="modal-${uniqueId}"]`);
+      const modal = document.getElementById(`modal-${uniqueId}`);
+      if (!trigger || !modal) return;
 
-      // --- COVER UP LOGIC (CLICK) ---
-      if (isCoverUp) {
-          const coverLayer = container.querySelector('.cover-up-layer');
-          const indicator = container.querySelector('.indicator');
-          let showingBefore = true;
+      const closeBtn = modal.querySelector('.modal-close');
+      const iframe = modal.querySelector('.lazy-iframe');
 
-          container.addEventListener('click', () => {
-              showingBefore = !showingBefore;
-              if (showingBefore) {
-                  coverLayer.style.opacity = '1';
-                  indicator.innerText = 'Click: Ver Después';
-                  indicator.classList.remove('bg-white', 'text-black');
-                  indicator.classList.add('bg-tattoo-gold', 'text-black');
-              } else {
-                  coverLayer.style.opacity = '0';
-                  indicator.innerText = 'Click: Ver Antes';
-                  indicator.classList.remove('bg-tattoo-gold', 'text-black');
-                  indicator.classList.add('bg-white', 'text-black');
-              }
-          });
-      }
-
-      // --- CAROUSEL LOGIC ---
-      const track = container.querySelector('.media-carousel-track');
-      const slides = container.querySelectorAll('.media-slide');
-      const nextBtn = container.querySelector('.tattoo-next');
-      const prevBtn = container.querySelector('.tattoo-prev');
-      const dots = container.querySelectorAll('.tattoo-dot');
-      
-      if (!track || slides.length <= 1) return;
-
-      let currentIndex = 0;
-
-      const updateCarousel = () => {
-          track.style.transform = `translateX(-${currentIndex * 100}%)`;
-          
-          dots.forEach((dot, index) => {
-              dot.classList.toggle('bg-tattoo-gold', index === currentIndex);
-              dot.classList.toggle('bg-white/40', index !== currentIndex);
-          });
-
-          if (prevBtn) prevBtn.disabled = currentIndex === 0;
-          if (nextBtn) nextBtn.disabled = currentIndex === slides.length - 1;
+      const openModal = () => {
+          modal.classList.remove('opacity-0', 'pointer-events-none');
+          document.body.style.overflow = 'hidden';
+          if (iframe && !iframe.src && iframe.dataset.src) {
+              iframe.src = iframe.dataset.src;
+          }
       };
 
-      if (nextBtn) {
-          nextBtn.addEventListener('click', (e) => {
-              e.stopPropagation(); // Prevent CoverUp click event if any
-              if (currentIndex < slides.length - 1) {
-                  currentIndex++;
-                  updateCarousel();
-              }
-          });
-      }
+      const closeModal = () => {
+          modal.classList.add('opacity-0', 'pointer-events-none');
+          document.body.style.overflow = '';
+          // Detener video al cerrar el modal
+          if (iframe && iframe.src) {
+              const src = iframe.src;
+              iframe.src = '';
+              iframe.src = src;
+          }
+      };
 
-      if (prevBtn) {
-          prevBtn.addEventListener('click', (e) => {
-              e.stopPropagation(); // Prevent CoverUp click event if any
-              if (currentIndex > 0) {
-                  currentIndex--;
-                  updateCarousel();
-              }
-          });
-      }
+      trigger.addEventListener('click', openModal);
+      if (closeBtn) closeBtn.addEventListener('click', closeModal);
+      
+      modal.addEventListener('click', (e) => {
+          if (e.target === modal || e.target.tagName.toLowerCase() === 'img') {
+              closeModal();
+          }
+      });
   });
 </script>

@@ -6,7 +6,7 @@ export interface Props {
 }
 
 const { 
-    image = "/meme_bg.png", 
+    image, // Removed static default meme image to allow text-only mode
     title = "Tatuadores buscan salida a la crisis y ya ofrecen sus cuerpos.", 
     subtitle = "Crece el trabajo sexual masculino." 
 } = Astro.props;
@@ -22,29 +22,44 @@ const {
             </button>
         </div>
 
-        {/* Background Image */}
-        <div class="relative w-full aspect-[4/5] sm:aspect-[3/4] bg-black">
-            <img src={image} alt="Tattoo artist background" class="w-full h-full object-cover opacity-80" />
-            
-            {/* Dark gradient from bottom for text readability */}
-            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent flex flex-col justify-end">
+        {/* Background Image or Text-only Mode */}
+        {image ? (
+            <div class="relative w-full aspect-[4/5] sm:aspect-[3/4] bg-black">
+                <img src={image} alt="Anuncio" class="w-full h-full object-cover opacity-80" />
                 
-                {/* News Area */}
-                <div class="w-full flex flex-col items-center text-center p-8 border-t border-tattoo-gold/30 bg-black/80 backdrop-blur-sm">
-                    {/* Headlines */}
-                    <h2 class="text-white font-black text-[20px] sm:text-[24px] uppercase leading-tight mb-4 tracking-[0.1em] drop-shadow-lg">
-                        <span class="text-tattoo-gold block mb-2 font-normal text-xs tracking-[0.3em]">ÚLTIMO MOMENTO</span>
-                        {title}
-                    </h2>
+                {/* Dark gradient from bottom for text readability */}
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent flex flex-col justify-end">
                     
-                    {subtitle && (
-                        <h3 class="text-white/60 font-light text-[14px] sm:text-[16px] uppercase leading-relaxed tracking-widest border-t border-white/10 pt-4 w-full">
-                            {subtitle}
-                        </h3>
-                    )}
+                    {/* News Area */}
+                    <div class="w-full flex flex-col items-center text-center p-8 border-t border-tattoo-gold/30 bg-black/80 backdrop-blur-sm">
+                        {/* Headlines */}
+                        <h2 class="text-white font-black text-[20px] sm:text-[24px] uppercase leading-tight mb-4 tracking-[0.1em] drop-shadow-lg">
+                            <span class="text-tattoo-gold block mb-2 font-normal text-xs tracking-[0.3em]">ATENCIÓN</span>
+                            {title}
+                        </h2>
+                        
+                        {subtitle && (
+                            <h3 class="text-white/60 font-light text-[14px] sm:text-[16px] uppercase leading-relaxed tracking-widest border-t border-white/10 pt-4 w-full">
+                                {subtitle}
+                            </h3>
+                        )}
+                    </div>
                 </div>
             </div>
-        </div>
+        ) : (
+            <div class="relative w-full bg-black flex flex-col items-center text-center p-8 sm:p-12 border-t-2 border-tattoo-gold">
+                <h2 class="text-white font-black text-[20px] sm:text-[24px] uppercase leading-tight mb-4 tracking-[0.1em] drop-shadow-lg">
+                    <span class="text-tattoo-gold block mb-2 font-normal text-xs tracking-[0.3em]">ATENCIÓN</span>
+                    {title}
+                </h2>
+                
+                {subtitle && (
+                    <h3 class="text-white/60 font-light text-[14px] sm:text-[16px] uppercase leading-relaxed tracking-widest border-t border-white/10 pt-4 w-full">
+                        {subtitle}
+                    </h3>
+                )}
+            </div>
+        )}
     </div>
 </div>
 

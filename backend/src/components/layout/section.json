@@ -1,0 +1,33 @@
+{
+  "collectionName": "components_layout_sections",
+  "info": {
+    "displayName": "Section",
+    "icon": "layer"
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "text": {
+      "type": "text"
+    },
+    "imageLayout": {
+      "type": "enumeration",
+      "enum": [
+        "left",
+        "right",
+        "bottom"
+      ],
+      "default": "right"
+    },
+    "images": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    }
+  }
+}

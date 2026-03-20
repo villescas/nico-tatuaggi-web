@@ -1,0 +1,37 @@
+{
+  "collectionName": "components_layout_care_steps",
+  "info": {
+    "displayName": "Care Step",
+    "icon": "heart"
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "icon": {
+      "type": "enumeration",
+      "enum": [
+        "wash",
+        "hydrate",
+        "avoid"
+      ],
+      "default": "wash"
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "alertText": {
+      "type": "string"
+    }
+  }
+}
