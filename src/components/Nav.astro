@@ -9,7 +9,7 @@ const currentLang = pathname.startsWith('/en') ? 'en' : 'es';
 const getSwitcherUrl = (targetLang) => {
   // Si estamos en /es/galeria y cambiamos a /en, la URL será /en/galeria
   // Si la ruta no tiene idioma explícito (ej: /), redirigimos a /en o /es
-  if (pathname === '/') return `/${targetLang}`;
+  if (pathname === '/') return `/${targetLang}/`;
   
   const segments = pathname.split('/').filter(Boolean);
   if (segments[0] === 'es' || segments[0] === 'en') {
@@ -17,7 +17,7 @@ const getSwitcherUrl = (targetLang) => {
   } else {
     segments.unshift(targetLang);
   }
-  return `/${segments.join('/')}`;
+  return `/${segments.join('/')}/`;
 };
 
 // Rutas dinámicas según el idioma actual
@@ -34,10 +34,10 @@ const langPrefix = `/${currentLang}`;
   
   {/* Center: Links */}
   <div class="hidden md:flex flex-none justify-center gap-10 nav-links">
-    <a href={`${langPrefix}/galeria`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">Portfolio</a>
-    <a href={`${langPrefix}/sobre-nico`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">El Artista</a>
-    <a href={`${langPrefix}/cuidados`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">Cuidados</a>
-    <a href={`${langPrefix}/faq`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">FAQ</a>
+    <a href={`${langPrefix}/galeria/`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">Portfolio</a>
+    <a href={`${langPrefix}/sobre-nico/`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">El Artista</a>
+    <a href={`${langPrefix}/cuidados/`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">Cuidados</a>
+    <a href={`${langPrefix}/faq/`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">FAQ</a>
   </div>
   
   {/* Right: Language Switcher & Mobile Menu */}
@@ -68,10 +68,10 @@ const langPrefix = `/${currentLang}`;
   {/* Mobile Menu Overlay */}
   <div id="mobile-menu" class="fixed inset-0 bg-[#050505]/98 backdrop-blur-xl z-50 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-500 scale-95 md:hidden">
     <div class="flex flex-col items-center gap-10 w-full px-6">
-      <a href={`${langPrefix}/galeria`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">Portfolio</a>
-      <a href={`${langPrefix}/sobre-nico`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">El Artista</a>
-      <a href={`${langPrefix}/cuidados`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">Cuidados</a>
-      <a href={`${langPrefix}/faq`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">FAQ</a>
+      <a href={`${langPrefix}/galeria/`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">Portfolio</a>
+      <a href={`${langPrefix}/sobre-nico/`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">El Artista</a>
+      <a href={`${langPrefix}/cuidados/`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">Cuidados</a>
+      <a href={`${langPrefix}/faq/`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">FAQ</a>
     </div>
   </div>
 </nav>
