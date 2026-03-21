@@ -1,6 +1,7 @@
 ---
 const { pathname } = Astro.url;
 const currentLang = pathname.startsWith('/en') ? 'en' : 'es';
+const directusUrl = import.meta.env.PUBLIC_DIRECTUS_URL || 'http://200.58.127.97:8055';
 
 const t = {
   es: {
@@ -43,7 +44,7 @@ const t = {
     {t[currentLang].subtitle}
   </p>
   
-  <form id="city-form" class="flex flex-col gap-6" data-lang={currentLang}>
+  <form id="city-form" class="flex flex-col gap-6" data-lang={currentLang} data-directus-url={directusUrl}>
     <div>
       <label class="block text-white/40 text-xs tracking-[0.3em] mb-3 uppercase">{t[currentLang].nameLabel}</label>
       <input type="text" name="name" required minlength="2" class="w-full bg-transparent border-b border-white/10 p-3 text-white focus:border-tattoo-gold focus:outline-none transition-colors placeholder:text-white/20 text-base font-light tracking-wider" placeholder={t[currentLang].namePlaceholder}>
@@ -159,8 +160,10 @@ const t = {
     const formData = new FormData(form);
     const data = Object.fromEntries(formData);
 
+    const directusUrl = form.getAttribute('data-directus-url');
+
     try {
-      const res = await fetch('/api/submit', {
+      const res = await fetch(`${directusUrl}/items/cityRequest`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
