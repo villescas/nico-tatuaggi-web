@@ -41,14 +41,14 @@ const embedUrl = esVideo ? getEmbedUrl(linkVideo) : null;
 <div id={`modal-${uniqueId}`} class="fixed inset-0 z-[100] bg-[#050505]/98 backdrop-blur-xl opacity-0 pointer-events-none transition-opacity duration-500 flex flex-col items-center justify-center">
     
     {/* Top Bar */}
-    <div class="absolute top-0 left-0 w-full p-4 md:p-6 flex justify-between items-center z-[110] bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
+    <div class="absolute top-0 left-0 w-full p-4 md:p-6 flex justify-between items-center z-[110] bg-gradient-to-b from-black/80 to-transparent">
         <div>
             <h4 class="text-tattoo-gold font-bold uppercase tracking-widest text-lg md:text-xl drop-shadow-lg">{titulo}</h4>
             <p class="text-white/60 text-xs tracking-[0.2em] mt-1 uppercase relative inline-block">
                 {sede}
             </p>
         </div>
-        <button class="modal-close pointer-events-auto text-white hover:text-tattoo-gold bg-white/5 hover:bg-white/10 rounded-full p-3 backdrop-blur-md transition-colors" aria-label="Cerrar media">
+        <button class="modal-close text-white hover:text-tattoo-gold bg-white/5 hover:bg-white/10 rounded-full p-3 backdrop-blur-md transition-colors" aria-label="Cerrar media">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
     </div>
