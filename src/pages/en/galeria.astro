@@ -3,7 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Tattoo from '../../components/Tattoo.astro';
 
-const DIRECTUS_URL = import.meta.env.PUBLIC_DIRECTUS_URL || 'http://200.58.127.97:8055';
+const DIRECTUS_URL = import.meta.env.PUBLIC_DIRECTUS_URL || 'https://panel.nicotatuaggi.com';
 const DIRECTUS_TOKEN = import.meta.env.DIRECTUS_API_TOKEN || '';
 
 const getAssetData = (obj) => {
@@ -72,14 +72,14 @@ if (tatuajes.length === 0) {
 >
   <Nav />
   
-  <main class="w-full min-h-screen pt-32 pb-24 px-6 max-w-7xl mx-auto">
-    <div class="text-center mb-16">
+  <main class="w-full min-h-screen pt-24 md:pt-32 pb-16 md:pb-24 px-6 max-w-7xl mx-auto">
+    <div class="text-center mb-10 md:mb-16">
         <h1 class="text-5xl md:text-6xl font-black text-white uppercase tracking-tighter mb-4">Portfolio</h1>
         <p class="text-tattoo-gold text-sm tracking-[0.3em] uppercase max-w-2xl mx-auto">Explore the full gallery of works</p>
     </div>
 
     {/* Filtros visuales usando Alpine o simple CSS/JS vanilla */}
-    <div class="flex flex-wrap justify-center gap-4 mb-16 filter-buttons">
+    <div class="flex flex-wrap justify-center gap-4 mb-10 md:mb-16 filter-buttons">
         <button class="px-6 py-2 border border-tattoo-gold text-tattoo-gold hover:bg-tattoo-gold hover:text-black transition-colors text-xs tracking-widest uppercase active-filter" data-filter="all">All</button>
         <button class="px-6 py-2 border border-tattoo-gold/30 text-tattoo-silver hover:border-tattoo-gold hover:text-tattoo-gold transition-colors text-xs tracking-widest uppercase" data-filter="Buenos Aires">Buenos Aires</button>
         <button class="px-6 py-2 border border-tattoo-gold/30 text-tattoo-silver hover:border-tattoo-gold hover:text-tattoo-gold transition-colors text-xs tracking-widest uppercase" data-filter="Londres">Londres</button>
@@ -140,3 +140,5 @@ if (tatuajes.length === 0) {
         });
     });
 </script>
+
+

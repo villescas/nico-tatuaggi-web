@@ -79,7 +79,7 @@ if (!perfil.name) {
 >
   <Nav />
   
-  <main class="w-full min-h-screen pt-32 pb-24 px-6 max-w-7xl mx-auto flex flex-col md:flex-row gap-16 relative">
+  <main class="w-full min-h-screen pt-24 md:pt-32 pb-16 md:pb-24 px-6 max-w-7xl mx-auto flex flex-col md:flex-row gap-16 relative">
     
     {/* Left Column: Fixed Navigation (Scrollspy concept) */}
     <div class="hidden md:block w-1/4 sticky top-40 h-fit">
@@ -100,7 +100,7 @@ if (!perfil.name) {
     </div>
 
     {/* Right Column: Timeline Content */}
-    <div class="w-full md:w-3/4 space-y-32">
+    <div class="w-full md:w-3/4 space-y-16 md:space-y-32">
         {/* Mobile Title */}
         <h2 class="md:hidden text-4xl font-black text-white uppercase tracking-tighter mb-8">{perfil.name}</h2>
 
@@ -253,3 +253,5 @@ if (!perfil.name) {
         });
     });
 </script>
+
+

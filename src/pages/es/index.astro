@@ -6,7 +6,7 @@ import CityForm from '../../components/CityForm.astro';
 import Nav from '../../components/Nav.astro';
 import MemePopup from '../../components/MemePopup.astro';
 
-const DIRECTUS_URL = import.meta.env.PUBLIC_DIRECTUS_URL || 'http://200.58.127.97:8055';
+const DIRECTUS_URL = import.meta.env.PUBLIC_DIRECTUS_URL || 'https://panel.nicotatuaggi.com';
 const DIRECTUS_TOKEN = import.meta.env.DIRECTUS_API_TOKEN || '';
 
 const getAssetData = (obj) => {
@@ -173,7 +173,7 @@ if (!perfil.name) {
 
   {/* Current Location / Destinations */}
   <section class="w-full max-w-5xl mx-auto px-6 py-24 border-t border-tattoo-gold/10">
-    <div class="flex flex-col items-center mb-16">
+    <div class="flex flex-col items-center mb-10 md:mb-16">
         <h2 class="text-tattoo-gold text-sm tracking-[0.3em] uppercase mb-4">Próximos Destinos</h2>
         <h3 class="text-3xl text-white font-bold tracking-widest uppercase">¿Dónde encontrarme?</h3>
     </div>
@@ -194,7 +194,7 @@ if (!perfil.name) {
 
   {/* Latest Work */}
   <section class="w-full max-w-7xl mx-auto px-6 py-24 bg-[#080808]/50 border-y border-tattoo-gold/10">
-    <div class="flex flex-col lg:flex-row justify-between items-center lg:items-end mb-16 gap-6 text-center lg:text-left">
+    <div class="flex flex-col lg:flex-row justify-between items-center lg:items-end mb-10 md:mb-16 gap-6 text-center lg:text-left">
         <div>
             <h2 class="text-tattoo-gold text-sm tracking-[0.3em] uppercase mb-4">Portfolio</h2>
             <h3 class="text-2xl md:text-3xl text-white font-bold tracking-widest uppercase">Últimos Trabajos</h3>
@@ -222,3 +222,5 @@ if (!perfil.name) {
     <CityForm />
   </section>
 </Layout>
+
+

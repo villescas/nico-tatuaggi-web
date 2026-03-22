@@ -1,7 +1,7 @@
 ---
 const { pathname } = Astro.url;
 const currentLang = pathname.startsWith('/en') ? 'en' : 'es';
-const directusUrl = import.meta.env.PUBLIC_DIRECTUS_URL || 'http://200.58.127.97:8055';
+const directusUrl = import.meta.env.PUBLIC_DIRECTUS_URL || 'https://panel.nicotatuaggi.com';
 
 const t = {
   es: {
@@ -187,3 +187,4 @@ const t = {
     btn.disabled = false;
   });
 </script>
+
