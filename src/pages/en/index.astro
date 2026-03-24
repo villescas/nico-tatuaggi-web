@@ -45,13 +45,15 @@ try {
   // 1. Buscamos los Viajes
   const rawViajes = await fetchDirectus('destinations');
   if (rawViajes) {
-      viajes = rawViajes.filter(v => v.showOnWeb).sort((a, b) => new Date(a.startDate) - new Date(b.startDate)) || [];
+      const viajesArray = Array.isArray(rawViajes) ? rawViajes : [];
+      viajes = viajesArray.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
   }
 
   // 2. Buscamos el Portfolio
   const rawTattoos = await fetchDirectus('tatuajes', '?limit=4&fields=*.*');
   if (rawTattoos) {
-      tatuajes = rawTattoos.map(t => ({
+      const rawTattoosArray = Array.isArray(rawTattoos) ? rawTattoos : [rawTattoos];
+      tatuajes = rawTattoosArray.filter(t => t).map(t => ({
           titulo: t.titulo,
           sede: t.sede,
           imagenUrl: t.imagen_portada ? getAssetUrl(t.imagen_portada, 'width=600&quality=80&format=webp') : null,
@@ -64,25 +66,31 @@ try {
   // 3. Buscamos el Profile
   const rawProfile = await fetchDirectus('profile');
   if (rawProfile) {
-      perfil = {
-          name: rawProfile.name,
-          whatsapp: rawProfile.whatsapp,
-          instagram: rawProfile.instagram,
-          heroBannerUrl: rawProfile.heroBanner ? getAssetUrl(rawProfile.heroBanner, 'width=1920&quality=85&format=webp') : null,
-          heroBannerMime: rawProfile.heroBanner ? getAssetData(rawProfile.heroBanner)?.mime : null
-      };
+      const profileData = Array.isArray(rawProfile) ? rawProfile[0] : rawProfile;
+      if (profileData) {
+          perfil = {
+              name: profileData.name,
+              whatsapp: profileData.whatsapp,
+              instagram: profileData.instagram,
+              heroBannerUrl: profileData.heroBanner ? getAssetUrl(profileData.heroBanner, 'width=1920&quality=85&format=webp') : null,
+              heroBannerMime: profileData.heroBanner ? getAssetData(profileData.heroBanner)?.mime : null
+          };
+      }
   }
 
   // 4. Buscamos el Popup
   const rawPopup = await fetchDirectus('popup');
   if (rawPopup) {
-      popup = {
-          popupActive: rawPopup.popupActive,
-          popupImage: rawPopup.popupImage ? getAssetUrl(rawPopup.popupImage, 'width=800&quality=85&format=webp') : null,
-          popupTitle: rawPopup.popupTitle,
-          popupSubtitle: rawPopup.popupSubtitle,
-          popupLink: rawPopup.popupLink
-      };
+      const popupData = Array.isArray(rawPopup) ? rawPopup[0] : rawPopup;
+      if (popupData) {
+          popup = {
+              popupActive: true,
+              popupImage: popupData.popupImage ? getAssetUrl(popupData.popupImage, 'width=800&quality=85&format=webp') : null,
+              popupTitle: popupData.popupTitle,
+              popupSubtitle: popupData.popupSubtitle,
+              popupLink: popupData.popupLink
+          };
+      }
   }
 } catch (e) {
     console.error("Error fetching from Directus", e);

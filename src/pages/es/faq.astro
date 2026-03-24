@@ -18,11 +18,15 @@ const fetchDirectus = async (endpoint, query = '?filter[visible][_eq]=true&field
   }
 };
 
-let faqData = null;
+let faqs = [];
 try {
   const rawFaq = await fetchDirectus('faq');
   if (rawFaq) {
-      faqData = { faqs: rawFaq.faqs };
+      const faqList = Array.isArray(rawFaq) ? rawFaq : (rawFaq.faqs || [rawFaq]);
+      faqs = faqList.map(f => ({
+          questionEs: f.questionEs || f.pregunta || "",
+          answerEs: f.answerEs || f.respuesta || ""
+      })).filter(f => f.questionEs !== "");
   }
 } catch (e) {
   console.error("Error fetching FAQ from Directus:", e);
@@ -48,7 +52,7 @@ const defaultFaqs = [
   }
 ];
 
-const faqs = faqData?.faqs?.length > 0 ? faqData.faqs : defaultFaqs;
+faqs = faqs.length > 0 ? faqs : defaultFaqs;
 
 // Convert Markdown-like text to HTML for simple line breaks and bold
 const parseText = (text) => {
