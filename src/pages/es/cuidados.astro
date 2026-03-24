@@ -20,7 +20,7 @@ const getAssetUrl = (obj, params = '') => {
 
 const fetchDirectus = async () => {
   try {
-    const res = await fetch(`${DIRECTUS_URL}/items/care?fields=*.*`, {
+    const res = await fetch(`${DIRECTUS_URL}/items/care?filter[visible][_eq]=true&fields=*.*`, {
       headers: DIRECTUS_TOKEN ? { Authorization: `Bearer ${DIRECTUS_TOKEN}` } : {}
     });
     if (!res.ok) return null;
@@ -176,5 +176,6 @@ const renderIcon = (iconType) => {
         }
     });
 </script>
+
 
 

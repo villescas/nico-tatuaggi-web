@@ -22,7 +22,7 @@ const getAssetUrl = (obj, params = '') => {
     return `${DIRECTUS_URL}/assets/${data.id}${params ? '?' + params : ''}`;
 };
 
-const fetchDirectus = async (endpoint, query = '?fields=*.*') => {
+const fetchDirectus = async (endpoint, query = '?filter[visible][_eq]=true&fields=*.*') => {
   try {
     const res = await fetch(`${DIRECTUS_URL}/items/${endpoint}${query}`, {
       headers: DIRECTUS_TOKEN ? { Authorization: `Bearer ${DIRECTUS_TOKEN}` } : {}
@@ -222,5 +222,6 @@ if (!perfil.name) {
     <CityForm />
   </section>
 </Layout>
+
 
 
