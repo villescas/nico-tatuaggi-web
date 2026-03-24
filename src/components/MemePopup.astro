@@ -3,12 +3,14 @@ export interface Props {
     image?: string;
     title?: string;
     subtitle?: string;
+    link?: string;
 }
 
 const { 
     image, // Removed static default meme image to allow text-only mode
     title = "Tatuadores buscan salida a la crisis y ya ofrecen sus cuerpos.", 
-    subtitle = "Crece el trabajo sexual masculino." 
+    subtitle = "Crece el trabajo sexual masculino.",
+    link
 } = Astro.props;
 ---
 <div id="meme-popup" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#050505]/95 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-700">
@@ -43,6 +45,12 @@ const {
                                 {subtitle}
                             </h3>
                         )}
+                        
+                        {link && (
+                            <a href={link} target="_blank" rel="noopener noreferrer" class="mt-6 inline-block bg-tattoo-gold text-black font-bold uppercase tracking-[0.2em] py-3 px-8 text-[10px] sm:text-xs hover:bg-white transition-colors duration-300">
+                                Ver Más
+                            </a>
+                        )}
                     </div>
                 </div>
             </div>
@@ -57,6 +65,12 @@ const {
                     <h3 class="text-white/60 font-light text-[14px] sm:text-[16px] uppercase leading-relaxed tracking-widest border-t border-white/10 pt-4 w-full">
                         {subtitle}
                     </h3>
+                )}
+                
+                {link && (
+                    <a href={link} target="_blank" rel="noopener noreferrer" class="mt-6 inline-block bg-tattoo-gold text-black font-bold uppercase tracking-[0.2em] py-3 px-8 text-[10px] sm:text-xs hover:bg-white transition-colors duration-300">
+                        Saber Más
+                    </a>
                 )}
             </div>
         )}

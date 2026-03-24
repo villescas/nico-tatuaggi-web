@@ -1,5 +1,6 @@
 ---
-const { titulo, imagenUrl, sede, linkVideo, esVideo } = Astro.props;
+const { titulo, imagenUrl, sede, linkVideo, esVideo, iaEtiquetas } = Astro.props;
+const tagsArray = Array.isArray(iaEtiquetas) ? iaEtiquetas : (typeof iaEtiquetas === 'string' ? iaEtiquetas.split(',').map(s=>s.trim()) : []);
 const uniqueId = `tattoo-${Math.random().toString(36).substr(2, 9)}`;
 
 const getEmbedUrl = (url) => {
@@ -19,8 +20,8 @@ const embedUrl = esVideo ? getEmbedUrl(linkVideo) : null;
 ---
 
 {/* 1. THUMBNAIL EN LA GRILLA */}
-<div class="relative group overflow-hidden border border-tattoo-gold/20 hover:border-tattoo-gold transition-all duration-500 h-full w-full cursor-pointer tattoo-trigger" data-target={`modal-${uniqueId}`}>
-  <div class="relative w-full h-full aspect-[4/5] bg-black">
+<div class="relative group overflow-hidden border border-tattoo-gold/20 hover:border-tattoo-gold transition-all duration-500 h-full w-full cursor-pointer tattoo-trigger flex flex-col" data-target={`modal-${uniqueId}`}>
+  <div class="relative w-full aspect-[4/5] bg-black">
       <img src={imagenUrl} alt={titulo} loading="lazy" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
       
       {esVideo && embedUrl && (
@@ -35,6 +36,17 @@ const embedUrl = esVideo ? getEmbedUrl(linkVideo) : null;
         <p class="text-tattoo-gold text-xs tracking-[0.2em] mt-1 uppercase drop-shadow-md">{sede}</p>
       </div>
   </div>
+
+  {/* IA Etiquetas */}
+  {tagsArray.length > 0 && (
+      <div class="w-full bg-[#050505] p-3 flex flex-wrap justify-between gap-y-2 border-t border-white/10">
+          <div class="flex flex-wrap gap-1.5 w-full">
+            {tagsArray.slice(0, 5).map(tag => (
+                <span class="text-[8px] md:text-[9px] font-bold text-white/40 border border-white/10 bg-white/5 px-2 py-1 rounded-md uppercase tracking-widest backdrop-blur-sm">{tag}</span>
+            ))}
+          </div>
+      </div>
+  )}
 </div>
 
 {/* 2. LIGHTBOX MODAL (Oculto por defecto) */}

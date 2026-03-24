@@ -56,7 +56,8 @@ try {
           sede: t.sede,
           imagenUrl: t.imagen_portada ? getAssetUrl(t.imagen_portada, 'width=600&quality=80&format=webp') : null,
           linkVideo: t.link_video,
-          esVideo: t.es_video
+          esVideo: t.es_video,
+          iaEtiquetas: t.ia_etiquetas
       }));
   }
 
@@ -79,7 +80,8 @@ try {
           popupActive: rawPopup.popupActive,
           popupImage: rawPopup.popupImage ? getAssetUrl(rawPopup.popupImage, 'width=800&quality=85&format=webp') : null,
           popupTitle: rawPopup.popupTitle,
-          popupSubtitle: rawPopup.popupSubtitle
+          popupSubtitle: rawPopup.popupSubtitle,
+          popupLink: rawPopup.popupLink
       };
   }
 } catch (e) {
@@ -125,6 +127,7 @@ if (!perfil.name) {
       image={popup.popupImage} 
       title={popup.popupTitle} 
       subtitle={popup.popupSubtitle} 
+      link={popup.popupLink}
     />
   )}
   <Nav />
@@ -212,6 +215,7 @@ if (!perfil.name) {
           imagenUrl={tatuaje.imagenUrl} 
           linkVideo={tatuaje.linkVideo}
           esVideo={tatuaje.esVideo}
+          iaEtiquetas={tatuaje.iaEtiquetas}
         />
       ))}
     </div>

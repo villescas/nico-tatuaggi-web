@@ -42,7 +42,8 @@ try {
           sede: t.sede,
           imagenUrl: t.imagen_portada ? getAssetUrl(t.imagen_portada, 'width=600&quality=80&format=webp') : null,
           linkVideo: t.link_video,
-          esVideo: t.es_video
+          esVideo: t.es_video,
+          iaEtiquetas: t.ia_etiquetas
       }));
   }
 } catch (e) {
@@ -94,6 +95,7 @@ if (tatuajes.length === 0) {
             imagenUrl={tatuaje.imagenUrl} 
             linkVideo={tatuaje.linkVideo}
             esVideo={tatuaje.esVideo}
+            iaEtiquetas={tatuaje.iaEtiquetas}
             />
         </div>
       ))}
