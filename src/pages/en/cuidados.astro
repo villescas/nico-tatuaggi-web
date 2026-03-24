@@ -18,9 +18,9 @@ const getAssetUrl = (obj, params = '') => {
     return `${DIRECTUS_URL}/assets/${data.id}${params ? '?' + params : ''}`;
 };
 
-const fetchDirectus = async () => {
+const fetchDirectus = async (endpoint) => {
   try {
-    const res = await fetch(`${DIRECTUS_URL}/items/care?filter[visible][_eq]=true&fields=*.*`, {
+    const res = await fetch(`${DIRECTUS_URL}/items/${endpoint}?filter[visible][_eq]=true&fields=*.*`, {
       headers: DIRECTUS_TOKEN ? { Authorization: `Bearer ${DIRECTUS_TOKEN}` } : {}
     });
     if (!res.ok) return null;
@@ -32,8 +32,10 @@ const fetchDirectus = async () => {
 };
 
 let careData = null;
+let rawSteps = null;
 try {
-  careData = await fetchDirectus();
+  careData = await fetchDirectus('care');
+  rawSteps = await fetchDirectus('care_steps');
 } catch (e) {
   console.error("Error fetching Care data from Directus", e);
 }
@@ -41,7 +43,7 @@ try {
 // Fallbacks (Wait for Directus to support i18n, manually fallback English if CMS empty or use CMS payload since Nico writes it)
 const pageTitle = careData?.title || "Aftercare";
 const pageSubtitle = careData?.subtitle || "Guide for the perfect healing of your tattoo";
-const steps = careData?.steps && careData.steps.length > 0 ? careData.steps : [
+const steps = Array.isArray(rawSteps) && rawSteps.length > 0 ? rawSteps : [
     {
         title: "1. Washing",
         icon: "wash",

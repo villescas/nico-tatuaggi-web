@@ -36,14 +36,17 @@ let perfil = {};
 try {
   const rawArtist = await fetchDirectus('artist');
   if (rawArtist) {
+      const isArray = Array.isArray(rawArtist);
+      const sectionsData = isArray ? rawArtist : (rawArtist.sections || []);
+      
       perfil = {
-          name: rawArtist.name,
-          sections: rawArtist.sections ? rawArtist.sections.map(s => ({
+          name: isArray ? "Nico Tatuaggi" : (rawArtist.name || "Nico Tatuaggi"),
+          sections: sectionsData.map(s => ({
               title: s.title,
               text: s.text,
               imageLayout: s.imageLayout,
-              images: s.images ? s.images.map(img => getAssetUrl(img, 'width=1000&quality=80&format=webp')) : []
-          })) : []
+              images: s.images ? (Array.isArray(s.images) ? s.images.map(img => getAssetUrl(img, 'width=1000&quality=80&format=webp')) : [getAssetUrl(s.images, 'width=1000&quality=80&format=webp')]) : []
+          }))
       };
   }
 } catch (e) {
