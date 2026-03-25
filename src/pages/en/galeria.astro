@@ -35,10 +35,10 @@ const fetchDirectus = async (endpoint, query = '?filter[visible][_eq]=true&field
 let tatuajes = [];
 
 try {
-  const rawTattoos = await fetchDirectus('tatuajes', '?limit=100&fields=*.*');
+  const rawTattoos = await fetchDirectus('tatuajes', '?filter[visible][_eq]=true&limit=100&fields=*.*');
   if (rawTattoos) {
       const rawTattoosArray = Array.isArray(rawTattoos) ? rawTattoos : [rawTattoos];
-      tatuajes = rawTattoosArray.filter(t => t).map(t => ({
+      tatuajes = [...rawTattoosArray].reverse().filter(t => t).map(t => ({
           titulo: t.titulo,
           sede: t.sede,
           imagenUrl: t.imagen_portada ? getAssetUrl(t.imagen_portada, 'width=600&quality=80&format=webp') : null,
