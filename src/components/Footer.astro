@@ -14,6 +14,29 @@ const t = {
         care: "Aftercare"
     }
 };
+
+const DIRECTUS_URL = import.meta.env.PUBLIC_DIRECTUS_URL || 'https://panel.nicotatuaggi.com';
+const DIRECTUS_TOKEN = import.meta.env.DIRECTUS_API_TOKEN || '';
+
+let socialLinks = { whatsapp: '5491158980992', instagram: 'https://www.instagram.com/nico.tatuaggi_tattoo.artist/' };
+try {
+  const res = await fetch(`${DIRECTUS_URL}/items/profile?filter[visible][_eq]=true&fields=*.*`, {
+      headers: DIRECTUS_TOKEN ? { Authorization: `Bearer ${DIRECTUS_TOKEN}` } : {}
+  });
+  if (res.ok) {
+    const json = await res.json();
+    const profileData = json.data;
+    if (profileData) {
+       const pd = Array.isArray(profileData) ? profileData[0] : profileData;
+       if (pd) {
+           if (pd.whatsapp) socialLinks.whatsapp = pd.whatsapp.replace(/[^0-9]/g, '');
+           if (pd.instagram) socialLinks.instagram = pd.instagram.startsWith('http') ? pd.instagram : `https://instagram.com/${pd.instagram.replace('@', '')}`;
+       }
+    }
+  }
+} catch (e) {}
+
+const waLink = `https://wa.me/${socialLinks.whatsapp}?text=Hola%20Nico%2C%20estuve%20viendo%20tu%20portfolio%20web%20y%20me%20encantar%C3%ADa%20cotizar%20un%20tatuaje%20de%20realismo.`;
 ---
 
 <footer class="w-full bg-[#050505] border-t border-tattoo-gold/10 pt-16 pb-8 px-6 mt-12 relative overflow-hidden">
@@ -27,16 +50,13 @@ const t = {
 
     {/* Center: Socials / Links */}
     <div class="flex gap-10 items-center justify-center">
-      <a href="#" class="text-white/50 hover:text-white transition-colors flex items-center gap-3 text-xs tracking-[0.3em] uppercase">
+      <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" class="text-white/50 hover:text-white transition-colors flex items-center gap-3 text-xs tracking-[0.3em] uppercase">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
         <span class="hidden md:inline">Instagram</span>
       </a>
-      <a href="#" class="text-white/50 hover:text-white transition-colors flex items-center gap-3 text-xs tracking-[0.3em] uppercase">
+      <a href={waLink} target="_blank" rel="noopener noreferrer" class="text-white/50 hover:text-white transition-colors flex items-center gap-3 text-xs tracking-[0.3em] uppercase">
          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
          <span class="hidden md:inline">WhatsApp</span>
-      </a>
-      <a href={`/${currentLang}/cuidados/`} class="text-white/50 hover:text-white transition-colors text-xs tracking-[0.3em] uppercase">
-        {t[currentLang].care}
       </a>
     </div>
 
