@@ -109,22 +109,46 @@ const t = {
               const data = await res.json();
               
               autocompleteList.innerHTML = '';
+              
+              const cleanedData = [];
+              const uniqueNames = new Set();
+              
               if (data.length > 0) {
                   data.forEach(place => {
+                      if(!place.address) return;
+                      // Fallbacks to get the shortest clean name
+                      let cityName = place.name || place.address.city || place.address.town || place.address.village;
+                      const countryName = place.address.country;
+                      
+                      if (cityName && countryName) {
+                          const cleanName = `${cityName}, ${countryName}`;
+                          if (!uniqueNames.has(cleanName)) {
+                              uniqueNames.add(cleanName);
+                              cleanedData.push({ cleanName, originalData: place });
+                          }
+                      }
+                  });
+
+                  cleanedData.forEach(item => {
                       const li = document.createElement('li');
                       li.className = 'px-4 py-3 text-sm text-white/80 hover:bg-tattoo-gold hover:text-black cursor-pointer transition-colors border-b border-white/5 last:border-none';
-                      li.textContent = place.display_name;
+                      li.textContent = item.cleanName;
                       
                       li.addEventListener('click', () => {
-                          cityInput.value = place.display_name;
-                          cityHidden.value = place.display_name; // Store the validated city
+                          cityInput.value = item.cleanName;
+                          cityHidden.value = item.cleanName; // Store the validated city
                           isCitySelected = true;
                           autocompleteList.innerHTML = '';
                           autocompleteList.classList.add('hidden');
                       });
                       autocompleteList.appendChild(li);
                   });
-                  autocompleteList.classList.remove('hidden');
+                  
+                  if (cleanedData.length > 0) {
+                      autocompleteList.classList.remove('hidden');
+                  } else {
+                      autocompleteList.classList.add('hidden');
+                  }
               } else {
                   autocompleteList.classList.add('hidden');
               }
