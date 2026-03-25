@@ -22,25 +22,14 @@ const endDay = end.getUTCDate();
 const startMonth = months[start.getUTCMonth()];
 const endMonth = months[end.getUTCMonth()];
 
-const formatDay = (d, lang) => {
-    if (lang === 'es' && d === 1) return '1ro';
-    if (lang === 'en') {
-        if (d === 1 || d === 21 || d === 31) return `${d}st`;
-        if (d === 2 || d === 22) return `${d}nd`;
-        if (d === 3 || d === 23) return `${d}rd`;
-        return `${d}th`;
-    }
-    return d.toString();
-};
-
-const sDay = formatDay(startDay, currentLang);
-const eDay = formatDay(endDay, currentLang);
+const sDay = startDay.toString();
+const eDay = endDay.toString();
 
 let displayDate;
 if (currentLang === 'es') {
-    displayDate = `Del ${sDay} de ${startMonth} al ${eDay} de ${endMonth}`;
+    displayDate = `${sDay} ${startMonth} AL ${eDay} ${endMonth}`;
 } else {
-    displayDate = `${startMonth} ${sDay} to ${endMonth} ${eDay}`;
+    displayDate = `${sDay} ${startMonth} TO ${eDay} ${endMonth}`;
 }
 displayDate = displayDate.toUpperCase();
 
@@ -69,9 +58,9 @@ const currentLocText = currentLang === 'en' ? 'CURRENT LOCATION' : 'UBICACIÓN A
   <div class="w-12 h-[1px] bg-white/10 my-6 group-hover:w-24 group-hover:bg-tattoo-gold/50 transition-all duration-700"></div>
   
   {/* Fecha formateada */}
-  <div class="flex items-center justify-center gap-3 text-tattoo-gold w-full flex-wrap">
+  <div class="flex items-center justify-center gap-3 text-tattoo-gold w-full whitespace-nowrap">
     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-    <p class="text-xs tracking-[0.2em] font-black">
+    <p class="text-[11px] md:text-xs tracking-[0.2em] font-black">
       {displayDate}
     </p>
   </div>
