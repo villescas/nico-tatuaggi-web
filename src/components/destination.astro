@@ -38,13 +38,9 @@ const eDay = formatDay(endDay, currentLang);
 
 let displayDate;
 if (currentLang === 'es') {
-    displayDate = startMonth === endMonth 
-      ? `Del ${sDay} al ${eDay} de ${startMonth}` 
-      : `Del ${sDay} de ${startMonth} al ${eDay} de ${endMonth}`;
+    displayDate = `Del ${sDay} de ${startMonth} al ${eDay} de ${endMonth}`;
 } else {
-    displayDate = startMonth === endMonth 
-      ? `${startMonth} ${sDay} to ${eDay}` 
-      : `${startMonth} ${sDay} to ${endMonth} ${eDay}`;
+    displayDate = `${startMonth} ${sDay} to ${endMonth} ${eDay}`;
 }
 displayDate = displayDate.toUpperCase();
 
