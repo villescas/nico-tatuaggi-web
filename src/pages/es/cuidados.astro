@@ -13,8 +13,12 @@ const getAssetData = (obj) => {
 };
 
 const getAssetUrl = (obj, params = '') => {
+    if (!obj) return null;
+    if (typeof obj === 'string' && obj.startsWith('http')) return obj;
+    if (obj.url) return obj.url;
     const data = getAssetData(obj);
     if (!data || !data.id) return null;
+    if (typeof data.id === 'string' && data.id.startsWith('http')) return data.id;
     return `${DIRECTUS_URL}/assets/${data.id}${params ? '?' + params : ''}`;
 };
 
@@ -34,7 +38,8 @@ const fetchDirectus = async (endpoint) => {
 let careData = null;
 let rawSteps = null;
 try {
-  careData = await fetchDirectus('care');
+  const careResp = await fetchDirectus('care');
+  careData = Array.isArray(careResp) ? careResp[0] : careResp;
   rawSteps = await fetchDirectus('care_steps');
 } catch (e) {
   console.error("Error fetching Care data from Directus", e);
