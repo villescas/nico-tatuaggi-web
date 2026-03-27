@@ -50,39 +50,21 @@ const pageTitle = careData?.title || "Cuidados";
 const pageSubtitle = careData?.subtitle || "Guía para la curación perfecta de tu tatuaje";
 const steps = Array.isArray(rawSteps) && rawSteps.length > 0 ? rawSteps : [
     {
-        title: "1. Lavado",
-        icon: "wash",
+        title: "Lavado",
         description: "➤ Retirar el film a las 2-3 horas de haber terminado la sesión.\n➤ Lavar la zona con agua tibia/fría y jabón neutro.\n➤ Secar con papel tissue.",
-        alertText: "Jabón Neutro",
         image: { url: "https://images.unsplash.com/photo-1584820927508-0125fb0ab691?auto=format&fit=crop&q=80&w=800" }
     },
     {
-        title: "2. Hidratación",
-        icon: "hydrate",
+        title: "Hidratación",
         description: "➤ A partir del 3er día, comenzar a aplicar una capa EXTREMADAMENTE FINA de crema.\n➤ Aplicar 2 a 3 veces al día.\n➤ Continuar hidratando por al menos 15 días.",
-        alertText: "Capa Fina",
         image: { url: "https://images.unsplash.com/photo-1608248593856-121f1981180b?auto=format&fit=crop&q=80&w=800" }
     },
     {
-        title: "3. Prohibiciones",
-        icon: "avoid",
+        title: "Prohibiciones",
         description: "➤ NO rascar, frotar ni arrancar las costras.\n➤ NO sumergir en piscinas o mar.\n➤ NO exponer al sol directo.",
-        alertText: "Evitar",
         image: { url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=800" }
     }
 ];
-
-const renderIcon = (iconType) => {
-    switch(iconType) {
-        case 'hydrate':
-            return `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>`;
-        case 'avoid':
-            return `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" x2="19.07" y1="4.93" y2="19.07"/></svg>`;
-        case 'wash':
-        default:
-            return `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>`;
-    }
-};
 ---
 
 <Layout 
@@ -107,8 +89,8 @@ const renderIcon = (iconType) => {
                 <div class="accordion-item bg-[#080808]/80 border border-white/5 relative overflow-hidden group hover:border-tattoo-gold/30 transition-colors duration-500 cursor-pointer">
                     <div class="accordion-header p-8 md:p-10 flex justify-between items-center relative z-10 w-full">
                         <div class="flex items-center gap-6">
-                            <div class="text-tattoo-gold opacity-80" set:html={renderIcon(step.icon)} />
-                            <h2 class="text-xl md:text-2xl font-bold text-white uppercase tracking-[0.3em]">{step.title}</h2>
+                            <div class="text-tattoo-gold font-light opacity-80 w-10 h-10 flex items-center justify-center border border-tattoo-gold/30 rounded-full text-2xl flex-shrink-0">{index + 1}</div>
+                            <h2 class="text-xl md:text-2xl font-bold text-white uppercase tracking-[0.3em]">{step.title ? step.title.replace(/^\d+[\.\-]?\s*/, '') : ''}</h2>
                         </div>
                         <div class="indicator text-tattoo-gold transition-transform duration-500">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
@@ -122,13 +104,7 @@ const renderIcon = (iconType) => {
                             </div>
                             <div class={`w-full md:w-2/5 aspect-video overflow-hidden rounded-sm border border-white/5 relative group mt-4 md:mt-0 flex-shrink-0 ${index % 2 !== 0 ? 'md:order-1 mb-4 md:mb-0' : ''}`}>
                                 <img src={imageUrl} alt={step.title} class="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" />
-                                <div class={`absolute inset-0 mix-blend-overlay group-hover:opacity-0 transition-opacity duration-500 ${step.icon === 'avoid' ? 'bg-red-900/20' : 'bg-tattoo-gold/10'}`}></div>
-                                {step.alertText && (
-                                    <div class={`absolute ${index % 2 !== 0 ? 'top-4 left-4' : 'top-4 right-4'} bg-black/80 px-3 py-1 text-[9px] tracking-widest uppercase pointer-events-none flex items-center gap-2 ${step.icon === 'avoid' ? 'text-[#ff4444]' : 'text-tattoo-gold'}`}>
-                                        {step.icon === 'avoid' && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>}
-                                        {step.alertText}
-                                    </div>
-                                )}
+                                <div class="absolute inset-0 mix-blend-overlay group-hover:opacity-0 transition-opacity duration-500 bg-tattoo-gold/10"></div>
                             </div>
                         </div>
                     </div>
