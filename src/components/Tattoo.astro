@@ -21,8 +21,8 @@ const embedUrl = esVideo ? getEmbedUrl(linkVideo) : null;
 
 {/* 1. THUMBNAIL EN LA GRILLA */}
 <div class="relative group overflow-hidden border border-tattoo-gold/20 hover:border-tattoo-gold transition-all duration-500 h-full w-full cursor-pointer tattoo-trigger flex flex-col" data-target={`modal-${uniqueId}`}>
-  <div class="relative w-full aspect-[4/5] bg-black">
-      <img src={imagenUrl} alt={titulo} loading="lazy" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+  <div class="relative w-full bg-[#050505]">
+      <img src={imagenUrl} alt={titulo} loading="lazy" class="w-full h-auto object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
       
       {esVideo && embedUrl && (
           <div class="absolute top-4 left-4 z-20 bg-white/10 backdrop-blur-md rounded-full p-2 border border-white/20 shadow-lg">

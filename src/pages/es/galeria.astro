@@ -83,13 +83,15 @@ if (tatuajes.length === 0) {
     {/* Filtros visuales usando Alpine o simple CSS/JS vanilla */}
     <div class="flex flex-wrap justify-center gap-4 mb-10 md:mb-16 filter-buttons">
         <button class="px-6 py-2 border border-tattoo-gold text-tattoo-gold hover:bg-tattoo-gold hover:text-black transition-colors text-xs tracking-widest uppercase active-filter" data-filter="all">Todos</button>
-        <button class="px-6 py-2 border border-tattoo-gold/30 text-tattoo-silver hover:border-tattoo-gold hover:text-tattoo-gold transition-colors text-xs tracking-widest uppercase" data-filter="Buenos Aires">Buenos Aires</button>
-        <button class="px-6 py-2 border border-tattoo-gold/30 text-tattoo-silver hover:border-tattoo-gold hover:text-tattoo-gold transition-colors text-xs tracking-widest uppercase" data-filter="Londres">Londres</button>
+        <button class="px-6 py-2 border border-tattoo-gold/30 text-tattoo-silver hover:border-tattoo-gold hover:text-tattoo-gold transition-colors text-xs tracking-widest uppercase" data-filter="realismo">Realismo</button>
+        <button class="px-6 py-2 border border-tattoo-gold/30 text-tattoo-silver hover:border-tattoo-gold hover:text-tattoo-gold transition-colors text-xs tracking-widest uppercase" data-filter="black and grey">Black & Grey</button>
+        <button class="px-6 py-2 border border-tattoo-gold/30 text-tattoo-silver hover:border-tattoo-gold hover:text-tattoo-gold transition-colors text-xs tracking-widest uppercase" data-filter="cover up">Cover Up</button>
+        <button class="px-6 py-2 border border-tattoo-gold/30 text-tattoo-silver hover:border-tattoo-gold hover:text-tattoo-gold transition-colors text-xs tracking-widest uppercase" data-filter="color">Color</button>
     </div>
 
-    <div class="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 portfolio-grid">
+    <div class="columns-1 md:columns-2 lg:columns-4 gap-6 space-y-6 portfolio-grid">
       {tatuajes.map((tatuaje) => (
-        <div class={`tattoo-item transition-all duration-500`} data-sede={tatuaje.sede}>
+        <div class={`tattoo-item transition-all duration-500 break-inside-avoid mb-6`} data-tags={Array.isArray(tatuaje.iaEtiquetas) ? tatuaje.iaEtiquetas.join(',') : (tatuaje.iaEtiquetas || '')}>
             <Tattoo 
             titulo={tatuaje.titulo} 
             sede={tatuaje.sede} 
@@ -121,10 +123,11 @@ if (tatuajes.length === 0) {
                 button.classList.remove('border-tattoo-gold/30', 'text-tattoo-silver');
                 button.classList.add('border-tattoo-gold', 'text-tattoo-gold', 'bg-tattoo-gold', 'text-black', 'active-filter'); // In a real scenario you might just want it gold border/text until hover, but this shows active state
 
-                const filterValue = button.getAttribute('data-filter');
+                const filterValue = button.getAttribute('data-filter').toLowerCase();
 
                 items.forEach(item => {
-                    if (filterValue === 'all' || item.getAttribute('data-sede') === filterValue) {
+                    const itemTags = (item.getAttribute('data-tags') || '').toLowerCase();
+                    if (filterValue === 'all' || itemTags.includes(filterValue)) {
                         item.style.display = 'block';
                         // Small timeout to allow display:block to apply before animating opacity
                         setTimeout(() => {
