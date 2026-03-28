@@ -41,7 +41,7 @@ try {
       tatuajes = [...rawTattoosArray].reverse().filter(t => t).map(t => ({
           titulo: t.titulo,
           sede: t.sede,
-          imagenUrl: t.imagen_portada ? getAssetUrl(t.imagen_portada, 'width=600&quality=80&format=webp') : null,
+          imagenUrl: t.imagen_portada ? t.imagen_portada : (t.archivo_local ? getAssetUrl(t.archivo_local, 'width=600&quality=80&format=webp') : null),
           linkVideo: t.link_video,
           esVideo: t.es_video,
           iaEtiquetas: t.ia_etiquetas
