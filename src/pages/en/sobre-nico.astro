@@ -3,33 +3,6 @@ import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 
 import { getAssetData, getAssetUrl, fetchDirectus } from '../../utils/directus.js';
-        name: "Nico Tatuaggi",
-        sections: [
-            {
-                title: "Origins",
-                text: "I started my career in the streets of Buenos Aires, looking for perfection in every stroke. Today, I travel the world taking my art to the main capitals of Europe.",
-                images: ["https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&q=80&w=800"],
-                imageLayout: "right"
-            },
-            {
-                title: "The Style",
-                text: "My style is based on realism and microrealism, prioritizing contrast and the durability of the ink over time.",
-                images: ["https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&q=80&w=800"],
-                imageLayout: "left"
-            }
-        ]
-    }
-}
----
-
-<Layout 
-  title="Nico Tatuaggi | The Artist"
-  description="Learn about the history, origins, and unique style of world-traveling tattoo artist Nico Tatuaggi."
-  image={perfil.sections && perfil.sections.length > 0 && perfil.sections[0].images && perfil.sections[0].images.length > 0 ? perfil.sections[0].images[0] : 'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&q=80&w=1200'}
->
-  <Nav />
-  
-  <main class="w-full min-h-screen pt-24 md:pt-32 pb-16 md:pb-24 px-6 max-w-7xl mx-auto flex flex-col md:flex-row gap-16 relative">
     
     {/* Left Column: Fixed Navigation (Scrollspy concept) */}
     <div class="hidden md:block w-1/4 sticky top-40 h-fit">
