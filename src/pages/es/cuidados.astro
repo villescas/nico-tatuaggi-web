@@ -52,27 +52,27 @@ const steps = Array.isArray(rawSteps) && rawSteps.length > 0 ? rawSteps : [
     {
         title: "El Vendaje Inicial",
         description: "➤ Mantén el film o vendaje protector puesto durante las primeras 2 a 4 horas después de salir del estudio.\n➤ Este vendaje inicial es crucial para proteger tu piel recién tatuada de bacterias y suciedad mientras tu cuerpo comienza el proceso de coagulación.\n➤ Si el tatuador te colocó un parche dérmico respirable (tipo Saniderm), puedes dejarlo entre 3 y 5 días según sus indicaciones específicas.",
-        image: { url: "https://picsum.photos/id/177/800/1422?grayscale" }
+        image: { url: "https://images.pexels.com/photos/4125661/pexels-photo-4125661.jpeg?auto=compress&cs=tinysrgb&w=800" }
     },
     {
         title: "El Primer Lavado",
         description: "➤ Lávate siempre bien las manos antes de tocar el tatuaje.\n➤ Usa agua tibia (no muy caliente) y un jabón neutro, preferiblemente sin perfume ni alcohol.\n➤ Lava la zona deslizando las yemas de tus dedos suavemente. Nunca uses esponjas, paños ni restriegues la piel.\n➤ El objetivo es limpiar los fluidos superficiales, sangre o exceso de tinta sin dañar la piel fresca.",
-        image: { url: "https://picsum.photos/id/338/800/1422?grayscale" }
+        image: { url: "https://images.pexels.com/photos/5439148/pexels-photo-5439148.jpeg?auto=compress&cs=tinysrgb&w=800" }
     },
     {
         title: "Secado y Oxigenación",
         description: "➤ El secado debe ser igual de cuidadoso que el lavado.\n➤ Utiliza servilletas de papel de cocina (tissue) limpias dando pequeños 'toques' sobre el tatuaje para absorber el agua.\n➤ NUNCA uses toallas de tela, ya que acumulan bacterias y sus hilos pueden engancharse en la piel.\n➤ Deja que el tatuaje respire libremente al aire durante unos 10 a 15 minutos antes de cubrirlo o aplicar cremas.",
-        image: { url: "https://picsum.photos/id/1060/800/1422?grayscale" }
+        image: { url: "https://images.pexels.com/photos/4153146/pexels-photo-4153146.jpeg?auto=compress&cs=tinysrgb&w=800" }
     },
     {
         title: "Hidratación Diaria",
         description: "➤ A partir del tercer día, cuando el tatuaje empiece a sentirse tirante o reseco, es momento de hidratar.\n➤ Aplica una capa EXTREMADAMENTE FINA de crema para el cuidado de tatuajes o loción sin perfume ni parabenos.\n➤ La piel debe tener un ligero brillo, pero no debe quedar una capa blanca de crema encima. El exceso de humedad ahoga el tatuaje y retrasa la curación.\n➤ Aplica la loción de 2 a 3 veces por día, o cada vez que lo laves, durante al menos las primeras 2 semanas.",
-        image: { url: "https://picsum.photos/id/1027/800/1422?grayscale" }
+        image: { url: "https://images.pexels.com/photos/4465829/pexels-photo-4465829.jpeg?auto=compress&cs=tinysrgb&w=800" }
     },
     {
         title: "Restricciones Críticas",
         description: "➤ Es normal que el tatuaje pique y se descame. ¡NO LO RASQUES NI ARRANCAS LAS COSTRAS! Dejarás cráteres sin tinta.\n➤ NO sumerjas el tatuaje bajo el agua: Evita piscinas, el mar, jacuzzis o largas inmersiones en la bañera durante al menos 3 semanas.\n➤ PROTÉGE LO DEL SOL: Durante el primer mes de sanación, mantenlo totalmente alejado del contacto directo con los rayos UV. Las quemaduras solares destruirán los pigmentos permanentemente.",
-        image: { url: "https://picsum.photos/id/22/800/1422?grayscale" }
+        image: { url: "https://images.pexels.com/photos/1032650/pexels-photo-1032650.jpeg?auto=compress&cs=tinysrgb&w=800" }
     }
 ];
 ---
@@ -112,10 +112,10 @@ const steps = Array.isArray(rawSteps) && rawSteps.length > 0 ? rawSteps : [
                             <div class={`text-white/60 font-light leading-loose space-y-6 text-sm md:text-base flex-1 ${index % 2 !== 0 ? 'md:order-2' : ''}`}>
                                 {paragraphs.map(p => <p>{p}</p>)}
                             </div>
-                            <div class={`w-full md:w-2/5 aspect-[9/16] overflow-hidden rounded-sm border border-white/5 relative group mt-4 md:mt-0 flex-shrink-0 ${index % 2 !== 0 ? 'md:order-1 mb-4 md:mb-0' : ''}`}>
-                                <img src={imageUrl} alt={step.title} class={`w-full h-full object-cover transition-all duration-700 ${(index === 0 || index === steps.length - 1) ? '' : 'grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105'}`} />
+                            <div class={`w-full md:w-2/5 aspect-[4/5] overflow-hidden rounded-sm border border-white/5 relative group mt-4 md:mt-0 flex-shrink-0 ${index % 2 !== 0 ? 'md:order-1 mb-4 md:mb-0' : ''}`}>
+                                <img src={imageUrl} alt={step.title} class={`w-full h-full object-cover transition-all duration-700 ${(index === 0 || index === steps.length - 1) ? '' : 'group-hover:scale-105'}`} />
                                 {!(index === 0 || index === steps.length - 1) && (
-                                    <div class="absolute inset-0 mix-blend-overlay group-hover:opacity-0 transition-opacity duration-500 bg-tattoo-gold/10"></div>
+                                    <div class="absolute inset-0 mix-blend-overlay group-hover:opacity-0 transition-opacity duration-500 bg-tattoo-gold/5"></div>
                                 )}
                             </div>
                         </div>

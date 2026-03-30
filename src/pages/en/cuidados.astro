@@ -52,27 +52,27 @@ const steps = Array.isArray(rawSteps) && rawSteps.length > 0 ? rawSteps : [
     {
         title: "The Initial Bandage",
         description: "➤ Keep the cling film or protective wrap on for the first 2 to 4 hours after leaving the studio.\n➤ This barrier is crucial to protect your fresh tattoo from airborne bacteria and dirt while your body naturally clots.\n➤ If your artist applied a breathable second-skin patch (like Saniderm), leave it on for 3 to 5 days per their instructions.",
-        image: { url: "https://picsum.photos/id/177/800/1422?grayscale" }
+        image: { url: "https://images.pexels.com/photos/4125661/pexels-photo-4125661.jpeg?auto=compress&cs=tinysrgb&w=800" }
     },
     {
         title: "The First Wash",
         description: "➤ Always wash your hands thoroughly before touching your tattoo.\n➤ Use lukewarm water and a completely neutral, unscented antibacterial soap.\n➤ Gently wash the area sliding your fingertips over the skin. Never use washcloths, sponges, or loofahs.\n➤ The goal is to clean plasma, blood, and excess ink without ripping the fresh skin layers.",
-        image: { url: "https://picsum.photos/id/338/800/1422?grayscale" }
+        image: { url: "https://images.pexels.com/photos/5439148/pexels-photo-5439148.jpeg?auto=compress&cs=tinysrgb&w=800" }
     },
     {
         title: "Drying and Breathing",
         description: "➤ Drying must be just as gentle as washing.\n➤ Use clean paper towels to gently pat or dab the tattoo dry.\n➤ NEVER use traditional cloth towels, as they harbor hidden bacteria and lint that hooks onto healing skin.\n➤ Allow the tattoo to fully air-dry and breathe for about 10 to 15 minutes before applying any ointments or covering it up.",
-        image: { url: "https://picsum.photos/id/1060/800/1422?grayscale" }
+        image: { url: "https://images.pexels.com/photos/4153146/pexels-photo-4153146.jpeg?auto=compress&cs=tinysrgb&w=800" }
     },
     {
         title: "Daily Hydration",
         description: "➤ Starting exactly on the third day, once the tattoo begins feeling tight, dry or itchy, it's time to hydrate.\n➤ Apply an EXTREMELY THIN layer of tattoo aftercare balm or unscented lotion.\n➤ Your skin should have a faint sheen, but there should be no visible white goo remaining. Over-moisturizing suffocates the tattoo and invites infections.\n➤ Reapply 2 to 3 times a day, or after every wash, for at least 2 full weeks.",
-        image: { url: "https://picsum.photos/id/1027/800/1422?grayscale" }
+        image: { url: "https://images.pexels.com/photos/4465829/pexels-photo-4465829.jpeg?auto=compress&cs=tinysrgb&w=800" }
     },
     {
         title: "Critical Restrictions",
         description: "➤ Peeling and intense itching is 100% normal. DO NOT SCRATCH OR PICK THE SCABS! Forcefully removing scabs pulls out wet ink.\n➤ NO SUBMERGING: Completely avoid swimming pools, the ocean, hot tubs, and long soaking baths for at least 3 weeks.\n➤ SUN PROTECTION: Keep the tattoo entirely out of direct UV sunlight for the first month. Sunburns will severely blister and blur fresh line-work.",
-        image: { url: "https://picsum.photos/id/22/800/1422?grayscale" }
+        image: { url: "https://images.pexels.com/photos/1032650/pexels-photo-1032650.jpeg?auto=compress&cs=tinysrgb&w=800" }
     }
 ];
 
@@ -124,10 +124,10 @@ const renderIcon = (iconType) => {
                             <div class={`text-white/60 font-light leading-loose space-y-6 text-sm md:text-base flex-1 ${index % 2 !== 0 ? 'md:order-2' : ''}`}>
                                 {paragraphs.map(p => <p>{p}</p>)}
                             </div>
-                            <div class={`w-full md:w-2/5 aspect-[9/16] overflow-hidden rounded-sm border border-white/5 relative group mt-4 md:mt-0 flex-shrink-0 ${index % 2 !== 0 ? 'md:order-1 mb-4 md:mb-0' : ''}`}>
-                                <img src={imageUrl} alt={step.title} class={`w-full h-full object-cover transition-all duration-700 ${(index === 0 || index === steps.length - 1) ? '' : 'grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105'}`} />
+                            <div class={`w-full md:w-2/5 aspect-[4/5] overflow-hidden rounded-sm border border-white/5 relative group mt-4 md:mt-0 flex-shrink-0 ${index % 2 !== 0 ? 'md:order-1 mb-4 md:mb-0' : ''}`}>
+                                <img src={imageUrl} alt={step.title} class={`w-full h-full object-cover transition-all duration-700 ${(index === 0 || index === steps.length - 1) ? '' : 'group-hover:scale-105'}`} />
                                 {!(index === 0 || index === steps.length - 1) && (
-                                    <div class="absolute inset-0 mix-blend-overlay group-hover:opacity-0 transition-opacity duration-500 bg-tattoo-gold/10"></div>
+                                    <div class="absolute inset-0 mix-blend-overlay group-hover:opacity-0 transition-opacity duration-500 bg-tattoo-gold/5"></div>
                                 )}
                             </div>
                         </div>
