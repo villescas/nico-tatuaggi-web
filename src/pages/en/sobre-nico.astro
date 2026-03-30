@@ -3,6 +3,75 @@ import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 
 import { getAssetData, getAssetUrl, fetchDirectus } from '../../utils/directus.js';
+
+// Minimalist proxy to Google Translate's public unmetered endpoint (Build-time only)
+async function translateText(text) {
+  if (!text) return text;
+  try {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl=en&dt=t&q=${encodeURIComponent(text)}`;
+    const res = await fetch(url);
+    const json = await res.json();
+    return json[0].map(item => item[0]).join('');
+  } catch(e) {
+    console.error("Auto-translation failed:", e);
+    return text; // Fallback to Spanish source on fail
+  }
+}
+
+let perfil = {};
+
+try {
+  const rawArtist = await fetchDirectus('artist');
+  if (rawArtist) {
+      const isArray = Array.isArray(rawArtist);
+      const sectionsData = isArray ? rawArtist : (rawArtist.sections || []);
+      
+      const parsedSections = await Promise.all(sectionsData.map(async (s) => ({
+          title: await translateText(s.title),
+          text: await translateText(s.text),
+          imageLayout: s.imageLayout,
+          images: s.images ? (Array.isArray(s.images) ? s.images.map(img => getAssetUrl(img, 'width=1000&quality=80&format=webp')) : [getAssetUrl(s.images, 'width=1000&quality=80&format=webp')]) : []
+      })));
+
+      perfil = {
+          name: isArray ? "Nico Tatuaggi" : (rawArtist.name || "Nico Tatuaggi"),
+          sections: parsedSections
+      };
+  }
+} catch (e) {
+  console.error("Error fetching profile from Directus:", e);
+}
+
+// Fallback Data if Directus is empty
+if (!perfil.name) {
+    perfil = {
+        name: "Nico Tatuaggi",
+        sections: [
+            {
+                title: "Origins",
+                text: "I started my career in the streets of Buenos Aires, looking for perfection in every stroke. Today, I travel the world taking my art to the main capitals of Europe.",
+                images: ["https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&q=80&w=800"],
+                imageLayout: "right"
+            },
+            {
+                title: "The Style",
+                text: "My style is based on realism and microrealism, prioritizing contrast and the durability of the ink over time.",
+                images: ["https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&q=80&w=800"],
+                imageLayout: "left"
+            }
+        ]
+    }
+}
+---
+
+<Layout 
+  title="Nico Tatuaggi | The Artist"
+  description="Learn about the history, origins, and unique style of world-traveling tattoo artist Nico Tatuaggi."
+  image={perfil.sections && perfil.sections.length > 0 && perfil.sections[0].images && perfil.sections[0].images.length > 0 ? perfil.sections[0].images[0] : 'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?auto=format&fit=crop&q=80&w=1200'}
+>
+  <Nav />
+  
+  <main class="w-full min-h-screen pt-24 md:pt-32 pb-16 md:pb-24 px-6 max-w-7xl mx-auto flex flex-col md:flex-row gap-16 relative">
     
     {/* Left Column: Fixed Navigation (Scrollspy concept) */}
     <div class="hidden md:block w-1/4 sticky top-40 h-fit">
@@ -25,7 +94,7 @@ import { getAssetData, getAssetUrl, fetchDirectus } from '../../utils/directus.j
     {/* Right Column: Timeline Content */}
     <div class="w-full md:w-3/4 space-y-16 md:space-y-32">
         {/* Mobile Title */}
-        <h2 class="md:hidden text-4xl font-black text-white uppercase tracking-tighter mb-8">{perfil.name}</h2>
+        <h2 class="md:hidden text-center text-4xl font-black text-white uppercase tracking-tighter mb-8">{perfil.name}</h2>
 
         {perfil.sections && perfil.sections.map((section, index) => {
             const id = section.title.toLowerCase().replace(/[^a-z0-9]/g, '-');
@@ -38,7 +107,7 @@ import { getAssetData, getAssetUrl, fetchDirectus } from '../../utils/directus.j
                         <span class="w-8 h-[1px] bg-tattoo-gold"></span> {section.title}
                     </h2>
                     
-                    <div class={`flex flex-col md:flex-row gap-12 ${isLeft ? 'md:flex-row-reverse' : ''} mb-20`}>
+                    <div class={`flex flex-col gap-12 ${isLeft ? 'md:flex-row-reverse' : (section.imageLayout === 'bottom' ? 'md:flex-col' : 'md:flex-row')} mb-20`}>
                         {/* Text Content */}
                         <div class="flex-1 prose prose-invert prose-p:text-tattoo-silver prose-p:font-light prose-p:leading-loose text-lg">
                             {section.text && section.text.split('\n\n').map(p => <p>{p}</p>)}
@@ -47,7 +116,7 @@ import { getAssetData, getAssetUrl, fetchDirectus } from '../../utils/directus.j
                         {/* Images / Carousel */}
                         {section.images && section.images.length > 0 && (
                             <div class="flex-1 w-full relative group carousel-container overflow-hidden">
-                                <div class="carousel-track flex w-full h-[60vh] md:h-[70vh] transition-transform duration-500 ease-out">
+                                <div class="carousel-track flex w-full h-[45vh] md:h-[70vh] transition-transform duration-500 ease-out">
                                     {section.images.map((imgUrl) => (
                                         <div class="carousel-slide min-w-full h-full flex-shrink-0">
                                             <img src={imgUrl} alt={section.title} class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
@@ -176,6 +245,3 @@ import { getAssetData, getAssetUrl, fetchDirectus } from '../../utils/directus.j
         });
     });
 </script>
-
-
-
