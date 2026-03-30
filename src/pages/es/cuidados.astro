@@ -2,39 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 
-const DIRECTUS_URL = import.meta.env.PUBLIC_DIRECTUS_URL || 'http://localhost:8055';
-const DIRECTUS_TOKEN = import.meta.env.DIRECTUS_API_TOKEN || '';
-
-const getAssetData = (obj) => {
-    if (!obj) return null;
-    if (typeof obj === 'string') return { id: obj, mime: null };
-    if (obj.directus_files_id) return { id: obj.directus_files_id.id || obj.directus_files_id, mime: obj.directus_files_id.type };
-    return { id: obj.id, mime: obj.type };
-};
-
-const getAssetUrl = (obj, params = '') => {
-    if (!obj) return null;
-    if (typeof obj === 'string' && obj.startsWith('http')) return obj;
-    if (obj.url) return obj.url;
-    const data = getAssetData(obj);
-    if (!data || !data.id) return null;
-    if (typeof data.id === 'string' && data.id.startsWith('http')) return data.id;
-    return `${DIRECTUS_URL}/assets/${data.id}${params ? '?' + params : ''}`;
-};
-
-const fetchDirectus = async (endpoint) => {
-  try {
-    const res = await fetch(`${DIRECTUS_URL}/items/${endpoint}?filter[visible][_eq]=true&fields=*.*`, {
-      headers: DIRECTUS_TOKEN ? { Authorization: `Bearer ${DIRECTUS_TOKEN}` } : {}
-    });
-    if (!res.ok) return null;
-    const json = await res.json();
-    return json.data;
-  } catch (e) {
-    return null;
-  }
-};
-
+import { getAssetData, getAssetUrl, fetchDirectus } from '../../utils/directus.js';
 let careData = null;
 let rawSteps = null;
 try {
