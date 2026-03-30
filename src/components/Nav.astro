@@ -22,6 +22,14 @@ const getSwitcherUrl = (targetLang) => {
 
 // Rutas dinámicas según el idioma actual
 const langPrefix = `/${currentLang}`;
+
+// Diccionario de Traducciones para el Nav
+const t = {
+  portfolio: currentLang === 'en' ? 'Portfolio' : 'Portfolio',
+  artist: currentLang === 'en' ? 'The Artist' : 'El Artista',
+  aftercare: currentLang === 'en' ? 'Aftercare' : 'Cuidados',
+  faq: 'FAQ'
+};
 ---
 
 <nav class="absolute top-0 w-full z-50 px-4 md:px-8 py-6 md:py-8 flex items-center justify-between bg-transparent">
@@ -34,10 +42,10 @@ const langPrefix = `/${currentLang}`;
   
   {/* Center: Links */}
   <div class="hidden md:flex flex-none justify-center gap-10 nav-links">
-    <a href={`${langPrefix}/galeria/`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">Portfolio</a>
-    <a href={`${langPrefix}/sobre-nico/`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">El Artista</a>
-    <a href={`${langPrefix}/cuidados/`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">Cuidados</a>
-    <a href={`${langPrefix}/faq/`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">FAQ</a>
+    <a href={`${langPrefix}/galeria/`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">{t.portfolio}</a>
+    <a href={`${langPrefix}/sobre-nico/`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">{t.artist}</a>
+    <a href={`${langPrefix}/cuidados/`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">{t.aftercare}</a>
+    <a href={`${langPrefix}/faq/`} class="nav-item text-white/70 hover:text-tattoo-gold transition-colors text-xs tracking-[0.4em] uppercase py-2 border-b border-transparent">{t.faq}</a>
   </div>
   
   {/* Right: Language Switcher & Mobile Menu */}
@@ -68,10 +76,10 @@ const langPrefix = `/${currentLang}`;
   {/* Mobile Menu Overlay */}
   <div id="mobile-menu" class="fixed inset-0 bg-[#050505]/98 backdrop-blur-xl z-50 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-500 scale-95 md:hidden">
     <div class="flex flex-col items-center gap-10 w-full px-6">
-      <a href={`${langPrefix}/galeria/`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">Portfolio</a>
-      <a href={`${langPrefix}/sobre-nico/`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">El Artista</a>
-      <a href={`${langPrefix}/cuidados/`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">Cuidados</a>
-      <a href={`${langPrefix}/faq/`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">FAQ</a>
+      <a href={`${langPrefix}/galeria/`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">{t.portfolio}</a>
+      <a href={`${langPrefix}/sobre-nico/`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">{t.artist}</a>
+      <a href={`${langPrefix}/cuidados/`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">{t.aftercare}</a>
+      <a href={`${langPrefix}/faq/`} class="nav-item mobile-nav-item text-white/70 hover:text-tattoo-gold transition-colors text-sm tracking-[0.4em] uppercase py-4 border-b border-white/5 w-full text-center">{t.faq}</a>
     </div>
   </div>
 </nav>

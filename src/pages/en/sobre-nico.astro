@@ -3,31 +3,6 @@ import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 
 import { getAssetData, getAssetUrl, fetchDirectus } from '../../utils/directus.js';
-let perfil = {};
-
-try {
-  const rawArtist = await fetchDirectus('artist');
-  if (rawArtist) {
-      const isArray = Array.isArray(rawArtist);
-      const sectionsData = isArray ? rawArtist : (rawArtist.sections || []);
-      
-      perfil = {
-          name: isArray ? "Nico Tatuaggi" : (rawArtist.name || "Nico Tatuaggi"),
-          sections: sectionsData.map(s => ({
-              title: s.title,
-              text: s.text,
-              imageLayout: s.imageLayout,
-              images: s.images ? (Array.isArray(s.images) ? s.images.map(img => getAssetUrl(img, 'width=1000&quality=80&format=webp')) : [getAssetUrl(s.images, 'width=1000&quality=80&format=webp')]) : []
-          }))
-      };
-  }
-} catch (e) {
-  console.error("Error fetching profile from Directus:", e);
-}
-
-// Fallback Data if Directus is empty
-if (!perfil.name) {
-    perfil = {
         name: "Nico Tatuaggi",
         sections: [
             {
