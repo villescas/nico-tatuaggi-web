@@ -79,5 +79,46 @@ if (tatuajes.length === 0) {
 </Layout>
 
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const buttons = document.querySelectorAll('.filter-buttons button');
+        const items = document.querySelectorAll('.tattoo-item');
+
+        buttons.forEach(button => {
+            button.addEventListener('click', () => {
+                // 1. Remove active state properties from all filter buttons
+                buttons.forEach(btn => {
+                    btn.classList.remove('border-tattoo-gold', 'text-tattoo-gold', 'bg-tattoo-gold', 'text-black', 'active-filter');
+                    btn.classList.add('border-tattoo-gold/30', 'text-tattoo-silver');
+                });
+                
+                // 2. Inject active state CSS properties into the triggering button
+                button.classList.remove('border-tattoo-gold/30', 'text-tattoo-silver');
+                button.classList.add('border-tattoo-gold', 'text-tattoo-gold', 'bg-tattoo-gold', 'text-black', 'active-filter');
+
+                const filterValue = button.getAttribute('data-filter').toLowerCase();
+
+                // 3. Scan the gallery nodes and resolve Display matrices against the button value
+                items.forEach(item => {
+                    const itemTags = (item.getAttribute('data-tags') || '').toLowerCase();
+                    if (filterValue === 'all' || itemTags.includes(filterValue)) {
+                        item.style.display = 'block';
+                        setTimeout(() => {
+                            item.style.opacity = '1';
+                            item.style.transform = 'scale(1)';
+                        }, 50);
+                    } else {
+                        item.style.opacity = '0';
+                        item.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                             item.style.display = 'none';
+                        }, 300);
+                    }
+                });
+            });
+        });
+    });
+</script>
+
+<script>
 
 
