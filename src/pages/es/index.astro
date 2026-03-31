@@ -99,7 +99,7 @@ if (!perfil.name) {
 
 <Layout 
   title="Nico Tatuaggi | Especialista en Realismo"
-  description="Arte corporal de alta precisión que transforma tu historia en una pieza única. Especialista en realismo y tapados de tatuajes."
+  description="Creando lo nuevo, transformando lo viejo."
   image={tatuajes.length > 0 && tatuajes[0].imagenUrl ? tatuajes[0].imagenUrl : 'https://images.unsplash.com/photo-1590246814883-57832efa2629?auto=format&fit=crop&q=80&w=1200'}
 >
   {popup.popupActive && (
@@ -139,15 +139,15 @@ if (!perfil.name) {
                 Realismo
             </h1>
         </div>
-        <p class="text-tattoo-silver text-sm md:text-base tracking-widest max-w-2xl mx-auto mb-10 leading-loose">
-            ARTE CORPORAL DE ALTA PRECISIÓN QUE TRANSFORMA TU HISTORIA EN UNA PIEZA ÚNICA
+        <p class="text-tattoo-silver text-sm md:text-base tracking-widest max-w-2xl mx-auto mb-10 leading-loose uppercase">
+            Creando lo nuevo, transformando lo viejo
         </p>
         
         <div class="flex flex-col sm:flex-row gap-6 justify-center">
             <a href="/es/galeria" class="bg-tattoo-gold text-black font-bold uppercase tracking-[0.2em] py-4 px-10 hover:bg-white transition-colors duration-300">
                 Ver Portfolio
             </a>
-            <a href={`https://wa.me/${(perfil.whatsapp || '').replace('+', '')}?text=Hola%20Nico%2C%20estuve%20viendo%20tu%20portfolio%20web%20y%20me%20encantar%C3%ADa%20cotizar%20un%20tatuaje%20de%20realismo.`} target="_blank" class="border border-tattoo-gold/50 text-tattoo-gold hover:bg-tattoo-gold/10 font-bold uppercase tracking-[0.2em] py-4 px-10 transition-colors duration-300">
+            <a href={`https://wa.me/${(perfil.whatsapp || '').replace('+', '')}?text=Hola%20Nico%2C%20estuve%20viendo%20tu%20portfolio%20web%20y%20me%20encantar%C3%ADa%20cotizar%20un%20tatuaje%20de%20realismo.`} target="_blank" class="border border-tattoo-gold/50 text-tattoo-gold hover:bg-tattoo-gold/10 font-bold uppercase tracking-[0.2em] py-4 px-10 transition-colors duration-300 animate-vibrate">
                 Reservar Cita
             </a>
         </div>
