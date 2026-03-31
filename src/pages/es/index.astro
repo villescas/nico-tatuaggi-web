@@ -42,20 +42,6 @@ try {
       if (profileData) {
           perfil = {
               name: profileData.name,
-              whatsapp: profileData.whatsapp,
-              instagram: profileData.instagram,
-              heroBannerUrl: profileData.heroBanner ? getAssetUrl(profileData.heroBanner, 'width=1920&quality=85&format=webp') : null,
-              heroBannerMime: profileData.heroBanner ? getAssetData(profileData.heroBanner)?.mime : null
-          };
-      }
-  }
-  }
-} catch (e) {
-    console.error("Error fetching from Directus", e);
-}
-
-// Fallback Data if Directus is empty
-if (viajes.length === 0) {
   const today = new Date();
   const nextMonth = new Date(today);
   nextMonth.setMonth(today.getMonth() + 1);
