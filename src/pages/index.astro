@@ -12,30 +12,13 @@ const hispanohablantes = ['AR', 'BO', 'CL', 'CO', 'CR', 'CU', 'DO', 'EC', 'SV', 
 let targetLang = 'en'; // Por defecto para el mundo entero
 
 // Check 1: ¿Viene de un país que habla español? (si el hosting lo permite)
-try {
-    if (countryInfo) {
-        // Netlify envía un string codificado a veces, pero para simplificar asumimos Vercel/Netlify country code puro
-        const countryCode = typeof countryInfo === 'string' ? countryInfo.toUpperCase().trim() : '';
-        if (hispanohablantes.includes(countryCode)) {
-            targetLang = 'es';
-        }
-
-        // 4. Buscamos el Popup
-        const rawPopup = await fetchDirectus('popup');
-        if (rawPopup) {
-            const popupData = Array.isArray(rawPopup) ? rawPopup[0] : rawPopup;
-            if (popupData) {
-                popup = {
-                    popupActive: popupData.visible === true,
-                    popupImage: popupData.popupImage ? getAssetUrl(popupData.popupImage, 'width=800&quality=85&format=webp') : null,
-                    popupTitle: popupData.popupTitle,
-                    popupSubtitle: popupData.popupSubtitle,
-                    popupLink: popupData.popupLink
-                };
-            }
-        }
+if (countryInfo) {
+    // Netlify envía un string codificado a veces, pero para simplificar asumimos Vercel/Netlify country code puro
+    const countryCode = typeof countryInfo === 'string' ? countryInfo.toUpperCase().trim() : '';
+    if (hispanohablantes.includes(countryCode)) {
+        targetLang = 'es';
     }
-} catch (e) {
+} else {
     // Check 2: ¿El navegador está configurado explícitamente en español?
     // accept-language ej: "es-AR,es;q=0.9,en;q=0.8"
     if (acceptLanguage.startsWith('es') || acceptLanguage.includes(' es-') || acceptLanguage.includes(',es')) {

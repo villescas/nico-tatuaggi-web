@@ -42,6 +42,34 @@ try {
       if (profileData) {
           perfil = {
               name: profileData.name,
+              whatsapp: profileData.whatsapp,
+              instagram: profileData.instagram,
+              heroBannerUrl: profileData.heroBanner ? getAssetUrl(profileData.heroBanner, 'width=1920&quality=85&format=webp') : null,
+              heroBannerMime: profileData.heroBanner ? getAssetData(profileData.heroBanner)?.mime : null
+          };
+      }
+  }
+
+  // 4. Buscamos el Popup
+  const rawPopup = await fetchDirectus('popup');
+  if (rawPopup) {
+      const popupData = Array.isArray(rawPopup) ? rawPopup[0] : rawPopup;
+      if (popupData) {
+          popup = {
+              popupActive: popupData.visible === true,
+              popupImage: popupData.popupImage ? getAssetUrl(popupData.popupImage, 'width=800&quality=85&format=webp') : null,
+              popupTitle: popupData.popupTitle,
+              popupSubtitle: popupData.popupSubtitle,
+              popupLink: popupData.popupLink
+          };
+      }
+  }
+} catch (e) {
+    console.error("Error fetching from Directus", e);
+}
+
+// Fallback Data if Directus is empty
+if (viajes.length === 0) {
   const today = new Date();
   const nextMonth = new Date(today);
   nextMonth.setMonth(today.getMonth() + 1);
