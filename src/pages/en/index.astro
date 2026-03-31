@@ -49,20 +49,6 @@ try {
           };
       }
   }
-
-  // 4. Buscamos el Popup
-  const rawPopup = await fetchDirectus('popup');
-  if (rawPopup) {
-      const popupData = Array.isArray(rawPopup) ? rawPopup[0] : rawPopup;
-      if (popupData) {
-          popup = {
-              popupActive: true,
-              popupImage: popupData.popupImage ? getAssetUrl(popupData.popupImage, 'width=800&quality=85&format=webp') : null,
-              popupTitle: popupData.popupTitle,
-              popupSubtitle: popupData.popupSubtitle,
-              popupLink: popupData.popupLink
-          };
-      }
   }
 } catch (e) {
     console.error("Error fetching from Directus", e);
