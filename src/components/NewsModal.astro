@@ -1,0 +1,172 @@
+---
+export interface Props {
+  closeText?: string;
+  linkText?: string;
+}
+
+const { 
+  closeText = "CERRAR",
+  linkText = "VER ENLACE"
+} = Astro.props;
+---
+
+<div id="news-modal-overlay" class="fixed inset-0 z-[120] flex items-center justify-center bg-[#050505]/95 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-500 overflow-y-auto pt-20 pb-10 px-4 md:px-0">
+    <div id="news-modal-box" class="relative w-full max-w-[1000px] bg-[#0a0a0a] border border-tattoo-gold/30 shadow-[0_0_60px_rgba(212,175,55,0.1)] scale-95 transition-transform duration-500 overflow-hidden flex flex-col md:flex-row my-auto">
+        
+        {/* Close Header for Mobile */}
+        <button id="close-news-btn" class="absolute top-4 right-4 z-[60] text-white/50 hover:text-tattoo-gold transition-colors bg-black/70 p-2 rounded-full backdrop-blur-md" aria-label={closeText}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+
+        {/* Gallery Slider (Left Side) */}
+        <div class="w-full md:w-[45%] bg-black relative flex flex-col hide-scrollbar overflow-y-auto max-h-[50vh] md:max-h-[85vh] border-b md:border-b-0 md:border-r border-tattoo-gold/20" id="news-modal-gallery-container">
+            {/* JS will inject images here. */}
+            <div id="news-modal-gallery" class="w-full flex flex-col gap-0">
+                {/* Images go here */}
+            </div>
+            <div class="sticky bottom-0 w-full h-12 bg-gradient-to-t from-black to-transparent pointer-events-none"></div>
+        </div>
+
+        {/* Text Content (Right Side) */}
+        <div id="news-modal-text-container" class="w-full md:w-[55%] p-6 md:p-12 flex flex-col max-h-[60vh] md:max-h-[85vh] overflow-y-auto custom-scrollbar relative transition-all duration-300">
+            
+            <div class="mb-6 pb-6 border-b border-tattoo-gold/20 mr-4">
+                <span id="news-modal-date" class="text-tattoo-gold text-[10px] md:text-xs tracking-[0.3em] uppercase block mb-3"></span>
+                <h2 id="news-modal-title" class="text-white text-2xl md:text-3xl lg:text-4xl font-black uppercase tracking-widest leading-tight"></h2>
+            </div>
+            
+            <div id="news-modal-content" class="text-white/80 font-light text-sm md:text-base leading-relaxed tracking-wide prose prose-invert prose-p:mb-4 prose-a:text-tattoo-gold prose-strong:text-white prose-headings:text-tattoo-gold mb-8 pr-4">
+                {/* Rich text injected here */}
+            </div>
+            
+            <div class="mt-auto pt-6 flex flex-col sm:flex-row gap-4 border-t border-white/5">
+                <a id="news-modal-link" href="#" target="_blank" rel="noopener noreferrer" class="hidden bg-tattoo-gold text-black font-bold uppercase tracking-[0.2em] py-4 px-8 text-center text-xs hover:bg-white transition-colors duration-300 w-full sm:w-auto">
+                    {linkText}
+                </a>
+                <button id="close-news-btn-alt" class="hidden sm:block border border-tattoo-gold/50 text-tattoo-gold hover:bg-tattoo-gold/10 font-bold uppercase tracking-[0.2em] py-4 px-8 text-center text-xs transition-colors duration-300 w-full sm:w-auto">
+                    {closeText}
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.3);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 175, 55, 0.6);
+}
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+</style>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+      const overlay = document.getElementById('news-modal-overlay');
+      const box = document.getElementById('news-modal-box');
+      const closeBtn = document.getElementById('close-news-btn');
+      const closeBtnAlt = document.getElementById('close-news-btn-alt');
+      
+      const titleEl = document.getElementById('news-modal-title');
+      const dateEl = document.getElementById('news-modal-date');
+      const contentEl = document.getElementById('news-modal-content');
+      const linkEl = document.getElementById('news-modal-link');
+      const galleryContainer = document.getElementById('news-modal-gallery-container');
+      const galleryEl = document.getElementById('news-modal-gallery');
+      const textContainer = document.getElementById('news-modal-text-container');
+
+      window.openNewsModal = function(element) {
+          const title = decodeURIComponent(element.getAttribute('data-title') || '');
+          const date = element.getAttribute('data-date') || '';
+          const content = decodeURIComponent(element.getAttribute('data-content') || '');
+          const link = element.getAttribute('data-link') || '';
+          
+          let gallery = [];
+          try {
+              gallery = JSON.parse(decodeURIComponent(element.getAttribute('data-gallery') || '[]'));
+          } catch(e) {}
+
+          if(titleEl) titleEl.innerHTML = title;
+          if(dateEl) dateEl.innerText = date;
+          
+          if(contentEl) {
+              contentEl.innerHTML = content;
+          }
+
+          if(linkEl) {
+              if(link && link.trim() !== '') {
+                  linkEl.href = link;
+                  linkEl.classList.remove('hidden');
+              } else {
+                  linkEl.classList.add('hidden');
+                  linkEl.href = '#';
+              }
+          }
+
+          if(galleryEl && galleryContainer && textContainer) {
+              galleryEl.innerHTML = '';
+              if (gallery.length > 0) {
+                  galleryContainer.classList.remove('hidden');
+                  textContainer.classList.remove('md:w-full');
+                  textContainer.classList.add('md:w-[55%]');
+                  
+                  gallery.forEach(imgUrl => {
+                      const img = document.createElement('img');
+                      img.src = imgUrl;
+                      img.className = 'w-full h-auto object-cover border-b border-black';
+                      img.loading = 'lazy';
+                      galleryEl.appendChild(img);
+                  });
+              } else {
+                 galleryContainer.classList.add('hidden');
+                 textContainer.classList.remove('md:w-[55%]');
+                 textContainer.classList.add('md:w-full');
+              }
+          }
+
+          if (overlay && box) {
+              overlay.classList.remove('opacity-0', 'pointer-events-none');
+              overlay.classList.add('opacity-100');
+              box.classList.remove('scale-95');
+              box.classList.add('scale-100');
+              document.body.style.overflow = 'hidden'; 
+          }
+      };
+
+      const closeNewsModal = () => {
+          if (overlay && box) {
+              overlay.classList.remove('opacity-100');
+              overlay.classList.add('opacity-0', 'pointer-events-none');
+              box.classList.remove('scale-100');
+              box.classList.add('scale-95');
+              document.body.style.overflow = ''; 
+          }
+      };
+
+      if (closeBtn) closeBtn.addEventListener('click', closeNewsModal);
+      if (closeBtnAlt) closeBtnAlt.addEventListener('click', closeNewsModal);
+      if (overlay) {
+          overlay.addEventListener('click', (e) => {
+              if (e.target === overlay) closeNewsModal();
+          });
+      }
+      
+      document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') closeNewsModal();
+      });
+  });
+</script>
