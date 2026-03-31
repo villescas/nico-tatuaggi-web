@@ -45,7 +45,9 @@ try {
               whatsapp: profileData.whatsapp,
               instagram: profileData.instagram,
               heroBannerUrl: profileData.heroBanner ? getAssetUrl(profileData.heroBanner, 'width=1920&quality=85&format=webp') : null,
-              heroBannerMime: profileData.heroBanner ? getAssetData(profileData.heroBanner)?.mime : null
+              heroBannerMime: profileData.heroBanner ? getAssetData(profileData.heroBanner)?.mime : null,
+              heroBannerMobileUrl: profileData.heroBannerMobile ? getAssetUrl(profileData.heroBannerMobile, 'width=800&quality=85&format=webp') : null,
+              heroBannerMobileMime: profileData.heroBannerMobile ? getAssetData(profileData.heroBannerMobile)?.mime : null
           };
       }
   }
@@ -114,15 +116,30 @@ if (!perfil.name) {
   
   {/* Hero Section */}
   <section class="relative min-h-[90vh] flex flex-col items-center justify-center text-center px-6 pt-20 overflow-hidden">
-    {perfil.heroBannerUrl ? (
+    {/* Desktop/Default Banner */}
+    {perfil.heroBannerUrl && (
       perfil.heroBannerMime && perfil.heroBannerMime.startsWith('video/') ? (
-        <video class="absolute inset-0 w-full h-full object-cover opacity-80" autoplay loop muted playsinline>
+        <video class={`absolute inset-0 w-full h-full object-cover opacity-80 ${perfil.heroBannerMobileUrl ? 'hidden md:block' : ''}`} autoplay loop muted playsinline>
           <source src={perfil.heroBannerUrl} type={perfil.heroBannerMime} />
         </video>
       ) : (
-        <div class="absolute inset-0 bg-cover bg-center opacity-80" style={`background-image: url('${perfil.heroBannerUrl}')`}></div>
+        <div class={`absolute inset-0 bg-cover bg-center opacity-80 ${perfil.heroBannerMobileUrl ? 'hidden md:block' : ''}`} style={`background-image: url('${perfil.heroBannerUrl}')`}></div>
       )
-    ) : (
+    )}
+
+    {/* Mobile Specific Banner */}
+    {perfil.heroBannerMobileUrl && (
+      perfil.heroBannerMobileMime && perfil.heroBannerMobileMime.startsWith('video/') ? (
+        <video class="absolute inset-0 w-full h-full object-cover opacity-80 md:hidden" autoplay loop muted playsinline>
+          <source src={perfil.heroBannerMobileUrl} type={perfil.heroBannerMobileMime} />
+        </video>
+      ) : (
+        <div class="absolute inset-0 bg-cover bg-center opacity-80 md:hidden" style={`background-image: url('${perfil.heroBannerMobileUrl}')`}></div>
+      )
+    )}
+
+    {/* Fallback Banner */}
+    {!perfil.heroBannerUrl && !perfil.heroBannerMobileUrl && (
       <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?auto=format&fit=crop&q=80&w=1920')] bg-cover bg-center opacity-60"></div>
     )}
     
