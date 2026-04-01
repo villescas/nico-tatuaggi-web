@@ -8,6 +8,14 @@ import Nav from '../../components/Nav.astro';
 import MemePopup from '../../components/MemePopup.astro';
 
 import { getAssetData, getAssetUrl, fetchDirectus } from '../../utils/directus.js';
+
+function extractYoutubeId(url) {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
 // Fetch Data with Fallbacks
 let viajes = [];
 let news = [];
@@ -44,8 +52,13 @@ try {
               heroBannerUrl: profileData.heroBanner ? getAssetUrl(profileData.heroBanner, 'width=1920&quality=85&format=webp') : null,
               heroBannerMime: profileData.heroBanner ? getAssetData(profileData.heroBanner)?.mime : null,
               heroBannerMobileUrl: profileData.heroBannerMobile ? getAssetUrl(profileData.heroBannerMobile, 'width=800&quality=85&format=webp') : null,
-              heroBannerMobileMime: profileData.heroBannerMobile ? getAssetData(profileData.heroBannerMobile)?.mime : null
+              heroBannerMobileMime: profileData.heroBannerMobile ? getAssetData(profileData.heroBannerMobile)?.mime : null,
+              youtubeId: profileData.heroBannerYoutube ? extractYoutubeId(profileData.heroBannerYoutube) : null,
+              youtubeMobileId: profileData.heroBannerMobileYoutube ? extractYoutubeId(profileData.heroBannerMobileYoutube) : null
           };
+          if (!perfil.youtubeMobileId && perfil.youtubeId) {
+             perfil.youtubeMobileId = perfil.youtubeId;
+          }
       }
   }
 
@@ -111,18 +124,28 @@ if (!perfil.name) {
   {/* Hero Section */}
   <section class="relative min-h-[90vh] flex flex-col items-center justify-center text-center px-6 pt-20 overflow-hidden">
     {/* Desktop/Default Banner */}
-    {perfil.heroBannerUrl && (
+    {perfil.heroBannerUrl ? (
       perfil.heroBannerMime && perfil.heroBannerMime.startsWith('video/') ? (
-        <video class={`absolute inset-0 w-full h-full object-cover opacity-80 ${perfil.heroBannerMobileUrl ? 'hidden md:block' : ''}`} autoplay loop muted playsinline>
+        <video class={`absolute inset-0 w-full h-full object-cover opacity-80 ${perfil.heroBannerMobileUrl || perfil.youtubeMobileId ? 'hidden md:block' : ''}`} autoplay loop muted playsinline>
           <source src={perfil.heroBannerUrl} type={perfil.heroBannerMime} />
         </video>
       ) : (
-        <div class={`absolute inset-0 bg-cover bg-center opacity-80 ${perfil.heroBannerMobileUrl ? 'hidden md:block' : ''}`} style={`background-image: url('${perfil.heroBannerUrl}')`}></div>
+        <div class={`absolute inset-0 bg-cover bg-center opacity-80 ${perfil.heroBannerMobileUrl || perfil.youtubeMobileId ? 'hidden md:block' : ''}`} style={`background-image: url('${perfil.heroBannerUrl}')`}></div>
       )
-    )}
+    ) : perfil.youtubeId ? (
+      <div class={`absolute inset-0 w-full h-full opacity-80 overflow-hidden pointer-events-none ${perfil.youtubeMobileId && perfil.youtubeMobileId !== perfil.youtubeId ? 'hidden md:block' : ''}`}>
+        <iframe 
+          class="absolute w-[300vw] h-[300vh] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:w-[150vw] md:h-[150vh]"
+          src={`https://www.youtube.com/embed/${perfil.youtubeId}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${perfil.youtubeId}&playsinline=1`} 
+          frameborder="0" 
+          allow="autoplay; encrypted-media" 
+          allowfullscreen>
+        </iframe>
+      </div>
+    ) : null}
 
     {/* Mobile Specific Banner */}
-    {perfil.heroBannerMobileUrl && (
+    {perfil.heroBannerMobileUrl ? (
       perfil.heroBannerMobileMime && perfil.heroBannerMobileMime.startsWith('video/') ? (
         <video class="absolute inset-0 w-full h-full object-cover opacity-80 md:hidden" autoplay loop muted playsinline>
           <source src={perfil.heroBannerMobileUrl} type={perfil.heroBannerMobileMime} />
@@ -130,10 +153,20 @@ if (!perfil.name) {
       ) : (
         <div class="absolute inset-0 bg-cover bg-center opacity-80 md:hidden" style={`background-image: url('${perfil.heroBannerMobileUrl}')`}></div>
       )
-    )}
+    ) : perfil.youtubeMobileId && perfil.youtubeMobileId !== perfil.youtubeId ? (
+       <div class="absolute inset-0 w-full h-full opacity-80 overflow-hidden md:hidden pointer-events-none">
+        <iframe 
+          class="absolute w-[400vw] h-[400vh] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+          src={`https://www.youtube.com/embed/${perfil.youtubeMobileId}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&loop=1&playlist=${perfil.youtubeMobileId}&playsinline=1`} 
+          frameborder="0" 
+          allow="autoplay; encrypted-media" 
+          allowfullscreen>
+        </iframe>
+      </div>
+    ) : null}
 
     {/* Fallback Banner */}
-    {!perfil.heroBannerUrl && !perfil.heroBannerMobileUrl && (
+    {!perfil.heroBannerUrl && !perfil.heroBannerMobileUrl && !perfil.youtubeId && !perfil.youtubeMobileId && (
       <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?auto=format&fit=crop&q=80&w=1920')] bg-cover bg-center opacity-60"></div>
     )}
     
