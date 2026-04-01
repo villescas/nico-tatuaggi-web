@@ -13,6 +13,8 @@ function extractYoutubeId(url) {
 let embedUrl = null;
 let finalImageUrl = imagenUrl;
 let isYoutube = false;
+let isInstagram = false;
+let isRawVideo = false;
 
 if (esVideo && linkVideo) {
     const ytId = extractYoutubeId(linkVideo);
@@ -23,20 +25,27 @@ if (esVideo && linkVideo) {
             finalImageUrl = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
         }
     } else if (linkVideo.includes('instagram.com/')) {
+        isInstagram = true;
         const base = linkVideo.split('?')[0];
         const cleanBase = base.endsWith('/') ? base.slice(0, -1) : base;
         embedUrl = `${cleanBase}/embed/`;
     } else {
+        isRawVideo = true;
         embedUrl = linkVideo;
     }
+} else if (finalImageUrl && (finalImageUrl.includes('.mp4') || finalImageUrl.includes('.webm') || finalImageUrl.includes('.mov'))) {
+    // Edge case: uploaded raw video file masquerading as a cover image
+    isRawVideo = true;
 }
 ---
 
 {/* 1. THUMBNAIL EN LA GRILLA */}
 <div class="relative group overflow-hidden border border-tattoo-gold/20 hover:border-tattoo-gold transition-all duration-500 h-full w-full cursor-pointer tattoo-trigger flex flex-col" data-target={`modal-${uniqueId}`}>
   <div class="relative w-full bg-[#050505]">
-      {finalImageUrl ? (
+      {finalImageUrl && !isRawVideo ? (
           <img src={finalImageUrl} alt={titulo} loading="lazy" class="w-full h-auto aspect-square object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+      ) : isRawVideo || (esVideo && embedUrl && !isYoutube && !isInstagram) ? (
+          <video src={embedUrl || finalImageUrl} class="w-full h-auto aspect-square object-cover grayscale group-hover:grayscale-0 transition-all duration-700 pointer-events-none" autoplay loop muted playsinline preload="metadata"></video>
       ) : (
           <div class="w-full h-full aspect-square bg-[#0a0a0a] flex items-center justify-center">
               <span class="text-white/20 text-4xl font-black tracking-widest uppercase">NT</span>
@@ -44,7 +53,7 @@ if (esVideo && linkVideo) {
       )}
       
       {esVideo && embedUrl && (
-          <div class="absolute top-4 left-4 z-20 bg-white/10 backdrop-blur-md rounded-full p-2 border border-white/20 shadow-lg">
+          <div class="absolute top-4 left-4 z-20 bg-white/10 backdrop-blur-md rounded-full p-2 border border-white/20 shadow-lg pointer-events-none">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
           </div>
       )}
@@ -88,8 +97,18 @@ if (esVideo && linkVideo) {
     <div class="relative w-full h-[80vh] md:max-w-5xl md:h-[85vh] flex items-center justify-center overflow-hidden">
         <div class="w-full h-full flex items-center justify-center p-4">
             {esVideo && embedUrl ? (
-                <div class={`w-full bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5 ${isYoutube ? 'max-w-5xl aspect-video h-auto' : 'max-w-[400px] h-[80%] max-h-[700px]'}`}>
-                    <iframe data-src={embedUrl} class="lazy-iframe w-full h-full border-none absolute inset-0" scrolling="no" allowtransparency="true" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                isRawVideo ? (
+                    <div class="w-full max-w-5xl aspect-video h-auto bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5 flex items-center justify-center">
+                        <video src={embedUrl} class="w-full h-full object-contain" autoplay loop muted playsinline controls></video>
+                    </div>
+                ) : (
+                    <div class={`w-full bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5 ${isYoutube ? 'max-w-5xl aspect-video h-auto' : 'max-w-[400px] h-[80%] max-h-[700px]'}`}>
+                        <iframe data-src={embedUrl} class="lazy-iframe w-full h-full border-none absolute inset-0" scrolling="no" allowtransparency="true" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                )
+            ) : isRawVideo ? (
+                <div class="w-full max-w-5xl aspect-video h-auto bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5 flex items-center justify-center">
+                    <video src={finalImageUrl} class="w-full h-full object-contain drop-shadow-2xl" autoplay loop muted playsinline controls></video>
                 </div>
             ) : (
                 <img src={finalImageUrl} alt={titulo} loading="lazy" class="max-w-full max-h-full object-contain drop-shadow-2xl select-none" />
