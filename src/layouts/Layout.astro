@@ -97,19 +97,43 @@ const waLink = `https://wa.me/${socialLinks.whatsapp}?text=Hola%20Nico%2C%20estu
 
 <style is:global>
 @keyframes pulse-ring-gold {
-  0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
-  70% { box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+  0% { 
+      -webkit-box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
+      box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); 
+  }
+  70% { 
+      -webkit-box-shadow: 0 0 0 15px rgba(212, 175, 55, 0);
+      box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); 
+  }
+  100% { 
+      -webkit-box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+      box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); 
+  }
 }
 @keyframes pulse-ring-white {
-  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5); }
-  70% { box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+  0% { 
+      -webkit-box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
+      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5); 
+  }
+  70% { 
+      -webkit-box-shadow: 0 0 0 15px rgba(255, 255, 255, 0);
+      box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); 
+  }
+  100% { 
+      -webkit-box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); 
+  }
 }
 .animate-pulse-gold {
   animation: pulse-ring-gold 2s infinite;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  will-change: box-shadow;
 }
 .animate-pulse-white {
   animation: pulse-ring-white 2s infinite;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  will-change: box-shadow;
 }
 </style>
