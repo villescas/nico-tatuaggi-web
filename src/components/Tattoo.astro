@@ -3,26 +3,45 @@ const { titulo, imagenUrl, sede, linkVideo, esVideo, iaEtiquetas } = Astro.props
 const tagsArray = Array.isArray(iaEtiquetas) ? iaEtiquetas : (typeof iaEtiquetas === 'string' ? iaEtiquetas.split(',').map(s=>s.trim()) : []);
 const uniqueId = `tattoo-${Math.random().toString(36).substr(2, 9)}`;
 
-const getEmbedUrl = (url) => {
+function extractYoutubeId(url) {
     if (!url) return null;
-    if (url.includes('instagram.com/reel/') || url.includes('instagram.com/p/')) {
-        const base = url.split('?')[0];
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
+let embedUrl = null;
+let finalImageUrl = imagenUrl;
+let isYoutube = false;
+
+if (esVideo && linkVideo) {
+    const ytId = extractYoutubeId(linkVideo);
+    if (ytId) {
+        isYoutube = true;
+        embedUrl = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=0&controls=1&showinfo=0&rel=0&loop=1&playlist=${ytId}&playsinline=1`;
+        if (!finalImageUrl) {
+            finalImageUrl = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+        }
+    } else if (linkVideo.includes('instagram.com/')) {
+        const base = linkVideo.split('?')[0];
         const cleanBase = base.endsWith('/') ? base.slice(0, -1) : base;
-        return `${cleanBase}/embed`;
+        embedUrl = `${cleanBase}/embed/`;
+    } else {
+        embedUrl = linkVideo;
     }
-    if (url.includes('youtube.com/watch?v=')) {
-        const id = url.split('v=')[1].split('&')[0];
-        return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}`;
-    }
-    return url;
-};
-const embedUrl = esVideo ? getEmbedUrl(linkVideo) : null;
+}
 ---
 
 {/* 1. THUMBNAIL EN LA GRILLA */}
 <div class="relative group overflow-hidden border border-tattoo-gold/20 hover:border-tattoo-gold transition-all duration-500 h-full w-full cursor-pointer tattoo-trigger flex flex-col" data-target={`modal-${uniqueId}`}>
   <div class="relative w-full bg-[#050505]">
-      <img src={imagenUrl} alt={titulo} loading="lazy" class="w-full h-auto object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+      {finalImageUrl ? (
+          <img src={finalImageUrl} alt={titulo} loading="lazy" class="w-full h-auto aspect-square object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+      ) : (
+          <div class="w-full h-full aspect-square bg-[#0a0a0a] flex items-center justify-center">
+              <span class="text-white/20 text-4xl font-black tracking-widest uppercase">NT</span>
+          </div>
+      )}
       
       {esVideo && embedUrl && (
           <div class="absolute top-4 left-4 z-20 bg-white/10 backdrop-blur-md rounded-full p-2 border border-white/20 shadow-lg">
@@ -69,11 +88,11 @@ const embedUrl = esVideo ? getEmbedUrl(linkVideo) : null;
     <div class="relative w-full h-[80vh] md:max-w-5xl md:h-[85vh] flex items-center justify-center overflow-hidden">
         <div class="w-full h-full flex items-center justify-center p-4">
             {esVideo && embedUrl ? (
-                <div class="w-full max-w-[400px] h-[80%] max-h-[700px] bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5">
+                <div class={`w-full bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5 ${isYoutube ? 'max-w-5xl aspect-video h-auto' : 'max-w-[400px] h-[80%] max-h-[700px]'}`}>
                     <iframe data-src={embedUrl} class="lazy-iframe w-full h-full border-none absolute inset-0" scrolling="no" allowtransparency="true" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                 </div>
             ) : (
-                <img src={imagenUrl} alt={titulo} loading="lazy" class="max-w-full max-h-full object-contain drop-shadow-2xl select-none" />
+                <img src={finalImageUrl} alt={titulo} loading="lazy" class="max-w-full max-h-full object-contain drop-shadow-2xl select-none" />
             )}
         </div>
     </div>
