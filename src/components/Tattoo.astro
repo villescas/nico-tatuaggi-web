@@ -40,12 +40,12 @@ if (esVideo && linkVideo) {
 ---
 
 {/* 1. THUMBNAIL EN LA GRILLA */}
-<div class="relative group overflow-hidden border border-tattoo-gold/20 hover:border-tattoo-gold transition-all duration-500 h-full w-full cursor-pointer tattoo-trigger flex flex-col" data-target={`modal-${uniqueId}`}>
+<div class="relative group overflow-hidden border border-tattoo-gold/20 hover:border-tattoo-gold/60 transition-all duration-500 h-full w-full cursor-pointer tattoo-trigger flex flex-col hover-subtle-pulse" data-target={`modal-${uniqueId}`}>
   <div class="relative w-full bg-[#050505]">
       {finalImageUrl && !isRawVideo ? (
-          <img src={finalImageUrl} alt={titulo} loading="lazy" class="w-full h-auto aspect-square object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+          <img src={finalImageUrl} alt={titulo} loading="lazy" class="w-full h-auto aspect-square object-cover transition-all duration-700" />
       ) : isRawVideo || (esVideo && embedUrl && !isYoutube && !isInstagram) ? (
-          <video src={embedUrl || finalImageUrl} class="w-full h-auto aspect-square object-cover grayscale group-hover:grayscale-0 transition-all duration-700 pointer-events-none" autoplay loop muted playsinline preload="metadata"></video>
+          <video src={embedUrl || finalImageUrl} class="w-full h-auto aspect-square object-cover transition-all duration-700 pointer-events-none" autoplay loop muted playsinline preload="metadata"></video>
       ) : (
           <div class="w-full h-full aspect-square bg-[#0a0a0a] flex items-center justify-center">
               <span class="text-white/20 text-4xl font-black tracking-widest uppercase">NT</span>
@@ -137,22 +137,44 @@ if (esVideo && linkVideo) {
       const closeModal = () => {
           modal.classList.add('opacity-0', 'pointer-events-none');
           document.body.style.overflow = '';
-          // Detener video al cerrar el modal
           if (iframe && iframe.src) {
-              const src = iframe.src;
               iframe.src = '';
-              iframe.src = src;
           }
       };
 
-      trigger.addEventListener('click', openModal);
-      if (closeBtn) closeBtn.addEventListener('click', closeModal);
-      
+      closeBtn.addEventListener('click', closeModal);
       modal.addEventListener('click', (e) => {
-          if (e.target === modal || e.target.tagName.toLowerCase() === 'img') {
+          if (e.target === modal || e.target.closest('.relative.w-full.h-\\[80vh\\]') === e.target) {
               closeModal();
           }
       });
+      document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') closeModal();
+      });
+
+      trigger.addEventListener('click', openModal);
   });
 </script>
 
+<style is:global>
+@keyframes ultra-subtle-pulse {
+  0% { 
+      -webkit-box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4);
+      box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); 
+  }
+  70% { 
+      -webkit-box-shadow: 0 0 0 6px rgba(212, 175, 55, 0);
+      box-shadow: 0 0 0 6px rgba(212, 175, 55, 0); 
+  }
+  100% { 
+      -webkit-box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+      box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); 
+  }
+}
+.hover-subtle-pulse:hover {
+  animation: ultra-subtle-pulse 2s infinite;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  will-change: box-shadow;
+}
+</style>
