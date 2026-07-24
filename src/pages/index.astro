@@ -1,20 +1,24 @@
 ---
 // src/pages/index.astro
-// Este archivo redirige automáticamente a los visitantes
-export const prerender = false;
-
-const acceptLanguage = Astro.request.headers.get('accept-language') || '';
-
-let targetLang = 'en'; // Por defecto para el mundo entero
-
-// ¿El navegador está configurado explícitamente en español?
-// accept-language ej: "es-AR,es;q=0.9,en;q=0.8"
-if (acceptLanguage.startsWith('es') || acceptLanguage.includes(' es-') || acceptLanguage.includes(',es')) {
-    targetLang = 'es';
-}
-
-return Astro.redirect(`/${targetLang}`);
+// Página estática que redirige al visitante según su idioma de navegador.
+// La detección se hace 100% del lado del cliente (navigator.language) para
+// poder mantener output: 'static' sin necesitar un adapter/servidor Node.
 ---
 
-
-
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <script is:inline>
+      const lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+      const targetLang = lang.startsWith('es') ? 'es' : 'en';
+      window.location.replace(`/${targetLang}/`);
+    </script>
+  </head>
+  <body>
+    <noscript>
+      <meta http-equiv="refresh" content="0; url=/en/" />
+      <p>Please enable JavaScript, or click <a href="/en/">here</a> to continue in English or <a href="/es/">aquí</a> para continuar en español.</p>
+    </noscript>
+  </body>
+</html>

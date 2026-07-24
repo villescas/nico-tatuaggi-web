@@ -1,116 +1,63 @@
 # Documentación del proyecto
 
-## Fix: error `NoAdapterInstalled` en el build de Astro
+## Redirect de idioma en `/`: por qué es 100% estático (y no SSR con Node)
 
-### Qué pasaba
+### El problema original
 
-`npm run build` fallaba con:
+`src/pages/index.astro` es la página que decide si mandar al visitante a `/es/` o `/en/`. La primera versión leía `Astro.request.headers.get('accept-language')` y llamaba a `Astro.redirect()` — lógica que depende de la request real, y que Astro solo puede resolver con renderizado on-demand (SSR). Como el proyecto no tenía ningún adapter instalado, el build fallaba con:
 
 ```
 [NoAdapterInstalled] Cannot use server-rendered pages without an adapter.
 ```
 
-La causa era [src/pages/index.astro](src/pages/index.astro): esa página lee headers de la request real (`accept-language`, y antes también `x-vercel-ip-country` / `x-netlify-geo`) y llama a `Astro.redirect()` para mandar al visitante a `/es` o `/en` según su idioma/país. Esa lógica no se puede resolver en build time (no existe una "request real" cuando Astro genera HTML estático), así que Astro exige renderizado on-demand (SSR) para esa ruta — y SSR requiere un adapter, que no estaba instalado.
+### Intento descartado: adapter Node SSR
 
-Es la **única** página del sitio con esta necesidad: todo el resto (`/es/*`, `/en/*`) es contenido estático normal y se sigue generando como HTML en build time.
+Se probó instalar `@astrojs/node` (modo `standalone`) y marcar `index.astro` con `export const prerender = false`, dejando el resto del sitio estático (modo híbrido de Astro). Esto **arregló el build**, pero se descartó por dos motivos concretos, encontrados al revisar cómo está desplegado el sitio en el VPS de producción:
 
-### Qué se cambió
+1. **El deploy real no corre ningún proceso Node para el frontend.** En el VPS, nginx sirve `nicotatuaggi.com` como archivos estáticos puros desde `/var/www/html` (`try_files ... /index.html`), sin ningún `proxy_pass` hacia un servidor Node. El pipeline de deploy (`rebuild.sh`) solo hace `npm run build && cp -R dist/* /var/www/html/` — no levanta ni gestiona ningún proceso `node dist/server/entry.mjs`. Meter SSR acá hubiera significado sumar una pieza operativa nueva (proceso Node persistente vía pm2/systemd + reverse proxy en nginx) solo para resolver un redirect.
+2. **Es innecesario para lo que hace falta.** La detección de idioma no necesita nada del servidor (geolocalización, cookies, sesión) — alcanza con lo que ya sabe el navegador: `navigator.language`. No hay ninguna razón real para pagar el costo operativo de SSR por esto.
 
-1. **Adapter instalado:** `@astrojs/node@9.5.5` (versión compatible con `astro@^5.17.3`, que es la que usa este proyecto — la última versión de `@astrojs/node` requiere Astro 7 y no aplica acá).
-2. **[astro.config.mjs](astro.config.mjs):** se agregó `adapter: node({ mode: 'standalone' })`, manteniendo `output: 'static'`. Esto activa el modo híbrido de Astro: todo prerenderiza como estático salvo las rutas que se marquen explícitamente como dinámicas.
-3. **[src/pages/index.astro](src/pages/index.astro):** se agregó `export const prerender = false;` para marcar esta ruta puntual como on-demand. Además se eliminó la detección de país vía `x-vercel-ip-country` / `x-netlify-geo` (headers que solo existen en Vercel/Netlify y nunca se van a recibir en un VPS propio); ahora la detección de idioma es únicamente por el header estándar `accept-language`, que cualquier navegador/proxy envía sin configuración especial.
+### Solución actual: Opción C — redirect 100% del lado del cliente
 
-Resultado del build (`npm run build`):
+`src/pages/index.astro` volvió a ser una página estática común (sin `prerender = false`, sin `Astro.request`, sin `Astro.redirect()`). Ahora es un HTML mínimo con un script inline que corre en el navegador:
 
-```
-[build] output: "static"
-[build] mode: "server"
-[build] adapter: @astrojs/node
-...
-prerendering static routes
-  /en/faq/index.html, /en/galeria/index.html, /en/sobre-nico/index.html, /en/index.html
-  /es/faq/index.html, /es/galeria/index.html, /es/sobre-nico/index.html, /es/index.html
-[build] Server built in 5.74s
-[build] Complete!
+```js
+const lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+const targetLang = lang.startsWith('es') ? 'es' : 'en';
+window.location.replace(`/${targetLang}/`);
 ```
 
-8 páginas siguen siendo estáticas puras; solo `/` (el redirect) queda como entrypoint de servidor en `dist/server/entry.mjs`.
+Regla: si el idioma del navegador empieza con `"es"` → `/es/`. Para cualquier otro caso (inglés, portugués, alemán, lo que sea) → `/en/` como default, porque es más probable que un visitante entienda inglés que español si no es explícitamente hispanohablante. Incluye un `<noscript>` con meta-refresh a `/en/` y links manuales por si el visitante tiene JS deshabilitado.
 
-### Cómo correr el servidor resultante en el VPS
+**`astro.config.mjs`** volvió a `output: 'static'` sin ningún `adapter`. Se sacó la dependencia `@astrojs/node` de `package.json`.
 
-El build genera dos carpetas:
+**Detalle no obvio que hubo que resolver:** con `i18n.routing.prefixDefaultLocale: true`, Astro genera automáticamente su propio redirect de `/` → `/{defaultLocale}` (vía meta-refresh, hardcodeado, sin mirar el idioma del navegador) y ese redirect **pisa cualquier `src/pages/index.astro` propio**, sin avisar ni tirar warning — el build simplemente ignoraba el contenido del archivo. Esto se resuelve agregando `redirectToDefaultLocale: false` dentro de `i18n.routing`, que le dice a Astro "no generes tu propio redirect en `/`, dejá que la use la página del usuario":
 
-- `dist/client/` — los assets estáticos (HTML, CSS, JS, imágenes) de las 8 páginas prerenderizadas.
-- `dist/server/entry.mjs` — el servidor Node standalone que sirve esos estáticos **y** resuelve la única ruta dinámica (`/`).
-
-En modo `standalone`, `@astrojs/node` levanta su propio servidor HTTP — no hace falta Express ni nada adicional. Se configura por variables de entorno:
-
-- `PORT` — puerto de escucha (default `8080` si no se define).
-- `HOST` — interfaz de escucha (default `0.0.0.0`).
-
-Arranque manual (para probar):
-
-```bash
-cd /ruta/al/proyecto
-PORT=4321 HOST=127.0.0.1 node ./dist/server/entry.mjs
-```
-
-#### Opción A: pm2
-
-```bash
-npm install -g pm2
-
-# Desde la raíz del proyecto, después de hacer `npm run build`:
-PORT=4321 HOST=127.0.0.1 pm2 start ./dist/server/entry.mjs --name nico-tatuaggi-web
-
-pm2 save
-pm2 startup   # genera el comando para que pm2 arranque solo en el boot del VPS
-```
-
-Comandos útiles: `pm2 restart nico-tatuaggi-web` (tras cada `npm run build` nuevo), `pm2 logs nico-tatuaggi-web`, `pm2 status`.
-
-#### Opción B: systemd
-
-Crear `/etc/systemd/system/nico-tatuaggi-web.service`:
-
-```ini
-[Unit]
-Description=nico-tatuaggi-web (Astro SSR - Node standalone)
-After=network.target
-
-[Service]
-Type=simple
-WorkingDirectory=/ruta/al/proyecto
-Environment=PORT=4321
-Environment=HOST=127.0.0.1
-ExecStart=/usr/bin/node /ruta/al/proyecto/dist/server/entry.mjs
-Restart=on-failure
-User=www-data
-
-[Install]
-WantedBy=multi-user.target
-```
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable --now nico-tatuaggi-web
-sudo systemctl status nico-tatuaggi-web
-```
-
-Tras cada deploy (`git pull` + `npm run build`), reiniciar con `sudo systemctl restart nico-tatuaggi-web` (o el equivalente `pm2 restart`).
-
-#### Nginx como reverse proxy
-
-Cualquiera de las dos opciones corre en `127.0.0.1:4321` (o el puerto que definas), sin exponerse directamente a internet. Nginx (u otro proxy) se encarga de TLS y de reenviar el tráfico:
-
-```nginx
-location / {
-    proxy_pass http://127.0.0.1:4321;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
+```js
+i18n: {
+  defaultLocale: "es",
+  locales: ["es", "en"],
+  routing: {
+    prefixDefaultLocale: true,
+    redirectToDefaultLocale: false
+  }
 }
 ```
 
-Esto asegura que el header `accept-language` (y cualquier otro header estándar del navegador) llegue intacto al proceso Node — es todo lo que necesita `index.astro` para decidir el idioma.
+### Verificación
+
+`npm run build` compila 100% estático:
+
+```
+[build] output: "static"
+[build] mode: "static"
+...
+[build] 9 page(s) built in 2.59s
+[build] Complete!
+```
+
+Sin adapter, sin carpetas `dist/client` / `dist/server` — `dist/` queda plano (`index.html`, `es/`, `en/`, `_astro/`, favicons), compatible tal cual con el `try_files` estático que ya usa nginx en el VPS. Se probó además en el navegador: con `navigator.language = "en-US"` el redirect lleva correctamente a `/en/`.
+
+### Colecciones vacías en Directus (contexto aparte, no relacionado a este fix)
+
+De paso quedó registrado en una revisión anterior: `faq`, `faq_preguntas`, `news` y `news_files` están vacías en Directus — esas secciones del sitio corren hoy con contenido de fallback hardcodeado en el código, no con datos reales cargados en el panel.
