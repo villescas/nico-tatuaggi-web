@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # Local Netlify folder
 .netlify
+
+# graphify knowledge-graph output/cache
+graphify-out/
