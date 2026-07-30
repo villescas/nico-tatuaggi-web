@@ -5,14 +5,12 @@ const directusUrl = import.meta.env.PUBLIC_DIRECTUS_URL || 'https://panel.nicota
 
 const t = {
   es: {
-    title: "¿A dónde debería ir?",
-    subtitle: "Pedí tu ciudad y enterate antes que nadie",
+    eyebrow: "¿A dónde debería ir?",
+    heading: "Pedí tu ciudad",
+    description: "Enterate antes que nadie cuándo Nico llega a tu ciudad. Dejá tus datos y te avisamos apenas se confirme una fecha.",
     nameLabel: "Tu Nombre",
-    namePlaceholder: "Ej: Juan Pérez",
     contactLabel: "Email",
-    contactPlaceholder: "Ej: juan@email.com",
     cityLabel: "Ciudad que pedís",
-    cityPlaceholder: "Empezá a escribir tu ciudad...",
     btnSubmit: "Pedir Ciudad",
     btnSending: "ENVIANDO...",
     msgSuccess: "¡PEDIDO ENVIADO CON ÉXITO!",
@@ -20,14 +18,12 @@ const t = {
     invalidCity: "POR FAVOR, SELECCIONA UNA CIUDAD DE LA LISTA."
   },
   en: {
-    title: "Where should I go?",
-    subtitle: "Request your city and be the first to know",
+    eyebrow: "Where should I go?",
+    heading: "Request your city",
+    description: "Be the first to know when Nico comes to your city. Leave your details and we'll notify you as soon as a date is confirmed.",
     nameLabel: "Your Name",
-    namePlaceholder: "Ex: John Doe",
     contactLabel: "Email",
-    contactPlaceholder: "Ex: john@email.com",
     cityLabel: "Requested City",
-    cityPlaceholder: "Start typing your city...",
     btnSubmit: "Request City",
     btnSending: "SENDING...",
     msgSuccess: "REQUEST SENT SUCCESSFULLY!",
@@ -36,36 +32,37 @@ const t = {
   }
 };
 ---
-<div class="w-full max-w-2xl mx-auto p-6 md:p-10 border border-white/5 bg-[#080808] hover:border-tattoo-gold/20 transition-colors duration-700">
-  <h2 class="text-2xl font-black text-white uppercase tracking-[0.3em] mb-3 text-center">
-    {t[currentLang].title}
-  </h2>
-  <p class="text-white/40 text-xs text-center mb-10 tracking-[0.4em] uppercase">
-    {t[currentLang].subtitle}
-  </p>
-  
-  <form id="city-form" class="flex flex-col gap-6" data-lang={currentLang} data-directus-url={directusUrl}>
+<div class="w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center">
+  {/* Copy */}
+  <div class="text-left">
+    <h2 class="text-tattoo-gold text-xs tracking-[0.3em] uppercase mb-4">{t[currentLang].eyebrow}</h2>
+    <h3 class="font-display text-4xl md:text-5xl text-white mb-6 leading-tight">{t[currentLang].heading}</h3>
+    <p class="text-tattoo-silver/70 text-sm md:text-base leading-relaxed max-w-md">{t[currentLang].description}</p>
+  </div>
+
+  {/* Form */}
+  <form id="city-form" class="flex flex-col gap-7" data-lang={currentLang} data-directus-url={directusUrl}>
     <div>
-      <label class="block text-white/40 text-xs tracking-[0.3em] mb-3 uppercase">{t[currentLang].nameLabel}</label>
-      <input type="text" name="name" required minlength="2" class="w-full bg-transparent border-b border-white/10 p-3 text-white focus:border-tattoo-gold focus:outline-none transition-colors placeholder:text-white/20 text-base font-light tracking-wider" placeholder={t[currentLang].namePlaceholder}>
+      <label for="name" class="sr-only">{t[currentLang].nameLabel}</label>
+      <input type="text" id="name" name="name" required minlength="2" placeholder={t[currentLang].nameLabel} class="w-full bg-transparent border-b border-white/15 pb-3 text-white focus:border-tattoo-gold focus:outline-none transition-colors placeholder:text-white/40 text-base font-light tracking-wide">
     </div>
-    
+
     <div>
-      <label class="block text-white/40 text-xs tracking-[0.3em] mb-3 uppercase">{t[currentLang].contactLabel}</label>
-      <input type="email" name="contact" required class="w-full bg-transparent border-b border-white/10 p-3 text-white focus:border-tattoo-gold focus:outline-none transition-colors placeholder:text-white/20 text-base font-light tracking-wider" placeholder={t[currentLang].contactPlaceholder}>
+      <label for="contact" class="sr-only">{t[currentLang].contactLabel}</label>
+      <input type="email" id="contact" name="contact" required placeholder={t[currentLang].contactLabel} class="w-full bg-transparent border-b border-white/15 pb-3 text-white focus:border-tattoo-gold focus:outline-none transition-colors placeholder:text-white/40 text-base font-light tracking-wide">
     </div>
-    
+
     <div class="relative">
-      <label class="block text-white/40 text-xs tracking-[0.3em] mb-3 uppercase">{t[currentLang].cityLabel}</label>
-      <input type="text" id="city-input" autocomplete="off" required class="w-full bg-transparent border-b border-white/10 p-3 text-white focus:border-tattoo-gold focus:outline-none transition-colors placeholder:text-white/20 text-base font-light tracking-wider" placeholder={t[currentLang].cityPlaceholder}>
+      <label for="city-input" class="sr-only">{t[currentLang].cityLabel}</label>
+      <input type="text" id="city-input" autocomplete="off" required placeholder={t[currentLang].cityLabel} class="w-full bg-transparent border-b border-white/15 pb-3 text-white focus:border-tattoo-gold focus:outline-none transition-colors placeholder:text-white/40 text-base font-light tracking-wide">
       <input type="hidden" name="city" id="city-hidden" required>
       <ul id="city-autocomplete-list" class="absolute z-50 w-full bg-[#111] border border-white/10 max-h-48 overflow-y-auto hidden mt-1 shadow-xl"></ul>
     </div>
-    
-    <button id="submit-btn" type="submit" class="w-full bg-tattoo-gold text-black font-black uppercase tracking-[0.3em] py-5 mt-6 hover:bg-white hover:text-black transition-colors duration-500 text-sm">
+
+    <button id="submit-btn" type="submit" class="w-full sm:w-auto self-start bg-tattoo-gold text-black font-black uppercase tracking-[0.25em] py-4 px-10 mt-2 hover:bg-white transition-colors duration-500 text-xs">
       {t[currentLang].btnSubmit}
     </button>
-    <p id="form-message" class="hidden text-center mt-6 text-xs tracking-[0.3em] uppercase font-bold"></p>
+    <p id="form-message" class="hidden text-xs tracking-[0.3em] uppercase font-bold"></p>
   </form>
 </div>
 

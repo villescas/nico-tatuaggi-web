@@ -8,6 +8,9 @@ export default {
                 'tattoo-gold': '#d4af37',
                 'tattoo-silver': '#c0c0c0',
             },
+            fontFamily: {
+                display: ['"Playfair Display"', 'serif'],
+            },
         },
     },
     plugins: [],
