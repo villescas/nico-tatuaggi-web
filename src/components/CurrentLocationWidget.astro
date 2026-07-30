@@ -1,0 +1,73 @@
+---
+export interface Props {
+  directusUrl?: string;
+}
+
+const { directusUrl = import.meta.env.PUBLIC_DIRECTUS_URL || 'https://panel.nicotatuaggi.com' } = Astro.props;
+---
+
+<div
+  id="current-location-pill"
+  data-directus-url={directusUrl}
+  class="hidden fixed bottom-6 left-6 z-50 items-center gap-2 max-w-[220px] bg-[#050505] border border-tattoo-gold/30 rounded-full pl-3 pr-4 py-2 shadow-2xl opacity-0 scale-95 translate-y-2 transition-all duration-[220ms] ease-out"
+>
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-tattoo-gold shrink-0"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+  <span id="current-location-city" class="text-tattoo-gold text-[11px] font-bold uppercase tracking-widest truncate"></span>
+</div>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const pill = document.getElementById('current-location-pill');
+    const citySpan = document.getElementById('current-location-city');
+    if (!pill || !citySpan) return;
+
+    const directusUrl = pill.getAttribute('data-directus-url');
+
+    try {
+      const res = await fetch(
+        `${directusUrl}/items/destinations?filter[visible][_eq]=true&fields=city,startDate,endDate,studioName&limit=-1`
+      );
+      if (!res.ok) return;
+
+      const json = await res.json();
+      const items = json.data || [];
+
+      // Compare calendar dates only (ignore time-of-day) so a trip that
+      // starts "today" counts as current regardless of what time the
+      // startDate/endDate values carry (they're stored at noon by convention).
+      const toDateOnly = (value) => {
+        const d = new Date(value);
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      };
+      const today = toDateOnly(new Date());
+
+      const current = items.filter((d) => {
+        if (!d.startDate || !d.endDate) return false;
+        const start = toDateOnly(d.startDate);
+        const end = toDateOnly(d.endDate);
+        return today >= start && today <= end;
+      });
+
+      if (current.length === 0) return;
+
+      // If a "stay" and a "convention" overlap on the same day, the convention
+      // is the more specific/relevant info for a visitor -- show that one.
+      const match =
+        current.find((d) => (d.studioName || '').toLowerCase().includes('convenci')) || current[0];
+
+      citySpan.textContent = match.city;
+      pill.classList.remove('hidden');
+      pill.classList.add('flex');
+
+      // Let the browser paint the hidden->flex change before animating in,
+      // so the transition actually has a starting state to move from.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          pill.classList.remove('opacity-0', 'scale-95', 'translate-y-2');
+        });
+      });
+    } catch (e) {
+      // Fail silently -- widget just stays hidden.
+    }
+  });
+</script>

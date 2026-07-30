@@ -1,5 +1,6 @@
 ---
 import Footer from '../components/Footer.astro';
+import CurrentLocationWidget from '../components/CurrentLocationWidget.astro';
 
 export interface Props {
   title?: string;
@@ -81,6 +82,8 @@ const waLink = `https://wa.me/${socialLinks.whatsapp}?text=Hola%20Nico%2C%20estu
     </main>
 
     <Footer />
+
+    <CurrentLocationWidget />
 
     {/* Floating Social Buttons */}
     <div class="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
