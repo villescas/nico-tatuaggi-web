@@ -1,5 +1,5 @@
 ---
-const { titulo, imagenUrl, sede, linkVideo, esVideo, iaEtiquetas } = Astro.props;
+const { titulo, imagenUrl, sede, linkVideo, esVideo, iaEtiquetas, galeria = [], enProceso = false, enProcesoLabel = 'En Curación' } = Astro.props;
 const tagsArray = Array.isArray(iaEtiquetas) ? iaEtiquetas : (typeof iaEtiquetas === 'string' ? iaEtiquetas.split(',').map(s=>s.trim()) : []);
 const uniqueId = `tattoo-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -10,6 +10,7 @@ function extractYoutubeId(url) {
     return (match && match[2].length === 11) ? match[2] : null;
 }
 
+// Legacy single-media resolution (still used as a fallback for items with no `galeria`)
 let embedUrl = null;
 let finalImageUrl = imagenUrl;
 let isYoutube = false;
@@ -37,24 +38,52 @@ if (esVideo && linkVideo) {
     // Edge case: uploaded raw video file masquerading as a cover image
     isRawVideo = true;
 }
+
+// Unified slide list: the new multi-file gallery takes priority; otherwise fall back
+// to the single legacy media resolved above (so old-style items keep working as-is).
+const galleryItems = Array.isArray(galeria) ? galeria.filter((g) => g && g.url) : [];
+const slides = galleryItems.length > 0
+    ? galleryItems.map((g) => ({ kind: g.tipo === 'video' ? 'video' : 'image', src: g.url }))
+    : (embedUrl || finalImageUrl)
+        ? [{
+            kind: (esVideo && embedUrl) ? (isYoutube ? 'youtube' : isInstagram ? 'instagram' : 'video') : 'image',
+            src: (esVideo && embedUrl) ? embedUrl : finalImageUrl,
+        }]
+        : [];
+
+const cover = slides[0] || null;
+const coverIsVideo = cover?.kind === 'video';
+const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null);
 ---
 
 {/* 1. THUMBNAIL EN LA GRILLA */}
 <div class="relative group overflow-hidden border border-tattoo-gold/20 hover:border-tattoo-gold/60 transition-all duration-500 h-full w-full cursor-pointer tattoo-trigger flex flex-col hover-subtle-pulse" data-target={`modal-${uniqueId}`}>
   <div class="relative w-full bg-[#050505]">
-      {finalImageUrl && !isRawVideo ? (
-          <img src={finalImageUrl} alt={titulo} loading="lazy" class="w-full h-auto aspect-square object-cover transition-all duration-700" />
-      ) : isRawVideo || (esVideo && embedUrl && !isYoutube && !isInstagram) ? (
-          <video src={embedUrl || finalImageUrl} class="w-full h-auto aspect-square object-cover transition-all duration-700 pointer-events-none" autoplay loop muted playsinline preload="metadata"></video>
+      {coverIsVideo ? (
+          <video src={cover.src} class="w-full h-auto aspect-[4/5] object-cover transition-all duration-700 pointer-events-none" autoplay loop muted playsinline preload="metadata"></video>
+      ) : coverThumb ? (
+          <img src={coverThumb} alt={titulo} loading="lazy" class="w-full h-auto aspect-[4/5] object-cover transition-all duration-700" />
       ) : (
-          <div class="w-full h-full aspect-square bg-[#0a0a0a] flex items-center justify-center">
+          <div class="w-full h-full aspect-[4/5] bg-[#0a0a0a] flex items-center justify-center">
               <span class="text-white/20 text-4xl font-black tracking-widest uppercase">NT</span>
           </div>
       )}
-      
+
+      {slides.length > 1 && (
+          <div class="absolute top-4 right-4 z-20 bg-black/60 backdrop-blur-md rounded-full px-2.5 py-1 border border-white/20 shadow-lg pointer-events-none text-white text-[10px] font-bold tracking-widest">
+              1/{slides.length}
+          </div>
+      )}
+
       {esVideo && embedUrl && (
           <div class="absolute top-4 left-4 z-20 bg-white/10 backdrop-blur-md rounded-full p-2 border border-white/20 shadow-lg pointer-events-none">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </div>
+      )}
+
+      {enProceso && (
+          <div class="absolute top-4 left-4 z-20 bg-tattoo-gold/90 backdrop-blur-md rounded-full px-3 py-1 border border-white/20 shadow-lg pointer-events-none text-black text-[9px] font-bold tracking-widest uppercase">
+              {enProcesoLabel}
           </div>
       )}
       
@@ -95,25 +124,39 @@ if (esVideo && linkVideo) {
 
     {/* Media Track */}
     <div class="relative w-full h-[80vh] md:max-w-5xl md:h-[85vh] flex items-center justify-center overflow-hidden">
-        <div class="w-full h-full flex items-center justify-center p-4">
-            {esVideo && embedUrl ? (
-                isRawVideo ? (
+        {slides.map((slide, i) => (
+            <div class="slide absolute inset-0 flex items-center justify-center p-4 transition-opacity duration-300" data-index={i} style={i === 0 ? '' : 'opacity:0; pointer-events:none;'}>
+                {slide.kind === 'video' ? (
                     <div class="w-full max-w-5xl aspect-video h-auto bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5 flex items-center justify-center">
-                        <video src={embedUrl} class="w-full h-full object-contain" autoplay loop muted playsinline controls></video>
+                        <video src={slide.src} class="w-full h-full object-contain" loop muted playsinline controls preload={i === 0 ? 'auto' : 'none'}></video>
+                    </div>
+                ) : slide.kind === 'youtube' ? (
+                    <div class="w-full max-w-5xl aspect-video h-auto bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5">
+                        <iframe data-src={slide.src} class="lazy-iframe w-full h-full border-none absolute inset-0" scrolling="no" allowtransparency="true" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                ) : slide.kind === 'instagram' ? (
+                    <div class="w-full max-w-[400px] h-[80%] max-h-[700px] bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5">
+                        <iframe data-src={slide.src} class="lazy-iframe w-full h-full border-none absolute inset-0" scrolling="no" allowtransparency="true" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                     </div>
                 ) : (
-                    <div class={`w-full bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5 ${isYoutube ? 'max-w-5xl aspect-video h-auto' : 'max-w-[400px] h-[80%] max-h-[700px]'}`}>
-                        <iframe data-src={embedUrl} class="lazy-iframe w-full h-full border-none absolute inset-0" scrolling="no" allowtransparency="true" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                    </div>
-                )
-            ) : isRawVideo ? (
-                <div class="w-full max-w-5xl aspect-video h-auto bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5 flex items-center justify-center">
-                    <video src={finalImageUrl} class="w-full h-full object-contain drop-shadow-2xl" autoplay loop muted playsinline controls></video>
+                    <img src={slide.src} alt={titulo} loading="lazy" class="max-w-full max-h-full object-contain drop-shadow-2xl select-none" />
+                )}
+            </div>
+        ))}
+
+        {slides.length > 1 && (
+            <>
+                <button class="slide-prev absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-[105] text-white hover:text-tattoo-gold bg-black/50 hover:bg-black/70 rounded-full p-3 backdrop-blur-md transition-colors" aria-label="Anterior">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                <button class="slide-next absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-[105] text-white hover:text-tattoo-gold bg-black/50 hover:bg-black/70 rounded-full p-3 backdrop-blur-md transition-colors" aria-label="Siguiente">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+                <div class="slide-counter absolute bottom-4 left-1/2 -translate-x-1/2 z-[105] bg-black/60 backdrop-blur-md rounded-full px-3 py-1 border border-white/20 text-white text-[11px] font-bold tracking-widest">
+                    1/{slides.length}
                 </div>
-            ) : (
-                <img src={finalImageUrl} alt={titulo} loading="lazy" class="max-w-full max-h-full object-contain drop-shadow-2xl select-none" />
-            )}
-        </div>
+            </>
+        )}
     </div>
 </div>
 
@@ -124,22 +167,53 @@ if (esVideo && linkVideo) {
       if (!trigger || !modal) return;
 
       const closeBtn = modal.querySelector('.modal-close');
-      const iframe = modal.querySelector('.lazy-iframe');
+      const slideEls = Array.from(modal.querySelectorAll('.slide'));
+      const prevBtn = modal.querySelector('.slide-prev');
+      const nextBtn = modal.querySelector('.slide-next');
+      const counterEl = modal.querySelector('.slide-counter');
+      let activeIndex = 0;
+
+      const activateSlide = (el) => {
+          const iframe = el.querySelector('.lazy-iframe');
+          if (iframe && !iframe.src && iframe.dataset.src) iframe.src = iframe.dataset.src;
+          const video = el.querySelector('video');
+          if (video) video.play().catch(() => {});
+      };
+
+      const deactivateSlide = (el) => {
+          const video = el.querySelector('video');
+          if (video) video.pause();
+      };
+
+      const showSlide = (index) => {
+          if (!slideEls.length) return;
+          activeIndex = (index + slideEls.length) % slideEls.length;
+          slideEls.forEach((el, i) => {
+              const isActive = i === activeIndex;
+              el.style.opacity = isActive ? '1' : '0';
+              el.style.pointerEvents = isActive ? 'auto' : 'none';
+              if (isActive) activateSlide(el); else deactivateSlide(el);
+          });
+          if (counterEl) counterEl.textContent = `${activeIndex + 1}/${slideEls.length}`;
+      };
+
+      if (prevBtn) prevBtn.addEventListener('click', (e) => { e.stopPropagation(); showSlide(activeIndex - 1); });
+      if (nextBtn) nextBtn.addEventListener('click', (e) => { e.stopPropagation(); showSlide(activeIndex + 1); });
 
       const openModal = () => {
           modal.classList.remove('opacity-0', 'pointer-events-none');
           document.body.style.overflow = 'hidden';
-          if (iframe && !iframe.src && iframe.dataset.src) {
-              iframe.src = iframe.dataset.src;
-          }
+          showSlide(0);
       };
 
       const closeModal = () => {
           modal.classList.add('opacity-0', 'pointer-events-none');
           document.body.style.overflow = '';
-          if (iframe && iframe.src) {
-              iframe.src = '';
-          }
+          slideEls.forEach((el) => {
+              deactivateSlide(el);
+              const iframe = el.querySelector('.lazy-iframe');
+              if (iframe && iframe.src) iframe.src = '';
+          });
       };
 
       closeBtn.addEventListener('click', closeModal);
@@ -149,7 +223,10 @@ if (esVideo && linkVideo) {
           }
       });
       document.addEventListener('keydown', (e) => {
+          if (modal.classList.contains('pointer-events-none')) return;
           if (e.key === 'Escape') closeModal();
+          if (e.key === 'ArrowLeft') showSlide(activeIndex - 1);
+          if (e.key === 'ArrowRight') showSlide(activeIndex + 1);
       });
 
       trigger.addEventListener('click', openModal);

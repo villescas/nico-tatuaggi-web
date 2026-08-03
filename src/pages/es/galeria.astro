@@ -7,17 +7,30 @@ import { getAssetData, getAssetUrl, fetchDirectus } from '../../utils/directus.j
 let tatuajes = [];
 
 try {
-  const rawTattoos = await fetchDirectus('tatuajes', '?filter[visible][_eq]=true&limit=100&fields=*.*');
+  const rawTattoos = await fetchDirectus('tatuajes', '?filter[visible][_eq]=true&limit=100&fields=*.*,en_proceso,archivos.directus_files_id.id,archivos.directus_files_id.type');
   if (rawTattoos) {
       const rawTattoosArray = Array.isArray(rawTattoos) ? rawTattoos : [rawTattoos];
-      tatuajes = [...rawTattoosArray].reverse().filter(t => t).map(t => ({
-          titulo: t.titulo,
-          sede: t.sede,
-          imagenUrl: t.imagen_portada ? t.imagen_portada : (t.archivo_local ? getAssetUrl(t.archivo_local, 'width=600&quality=80&format=webp') : null),
-          linkVideo: t.link_video,
-          esVideo: t.es_video,
-          iaEtiquetas: t.ia_etiquetas
-      }));
+      tatuajes = [...rawTattoosArray].reverse().filter(t => t).map(t => {
+          const galeria = Array.isArray(t.archivos)
+              ? t.archivos.map(a => a.directus_files_id).filter(Boolean).map(f => {
+                  const isVideo = (f.type || '').startsWith('video/');
+                  return {
+                      url: isVideo ? getAssetUrl(f.id) : getAssetUrl(f.id, 'width=1000&quality=82&format=webp'),
+                      tipo: isVideo ? 'video' : 'imagen'
+                  };
+              })
+              : [];
+          return {
+              titulo: t.titulo,
+              sede: t.sede,
+              imagenUrl: t.imagen_portada ? t.imagen_portada : (t.archivo_local ? getAssetUrl(t.archivo_local, 'width=600&quality=80&format=webp') : null),
+              linkVideo: t.link_video,
+              esVideo: t.es_video,
+              iaEtiquetas: t.ia_etiquetas,
+              galeria,
+              enProceso: t.en_proceso === true
+          };
+      });
   }
 } catch (e) {
     console.error("Error fetching from Directus", e);
@@ -64,13 +77,16 @@ if (tatuajes.length === 0) {
     <div class="columns-1 md:columns-2 lg:columns-4 gap-6 space-y-6 portfolio-grid">
       {tatuajes.map((tatuaje) => (
         <div class={`tattoo-item transition-all duration-500 break-inside-avoid mb-6`} data-tags={Array.isArray(tatuaje.iaEtiquetas) ? tatuaje.iaEtiquetas.join(',') : (tatuaje.iaEtiquetas || '')}>
-            <Tattoo 
-            titulo={tatuaje.titulo} 
-            sede={tatuaje.sede} 
-            imagenUrl={tatuaje.imagenUrl} 
+            <Tattoo
+            titulo={tatuaje.titulo}
+            sede={tatuaje.sede}
+            imagenUrl={tatuaje.imagenUrl}
             linkVideo={tatuaje.linkVideo}
             esVideo={tatuaje.esVideo}
             iaEtiquetas={tatuaje.iaEtiquetas}
+            galeria={tatuaje.galeria}
+            enProceso={tatuaje.enProceso}
+            enProcesoLabel="En Curación"
             />
         </div>
       ))}
