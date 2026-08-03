@@ -28,3 +28,6 @@ pnpm-debug.log*
 
 # graphify knowledge-graph output/cache
 graphify-out/
+
+# credenciales locales, nunca a git
+CREDENCIALES_LOCAL.md
