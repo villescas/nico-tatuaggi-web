@@ -32,7 +32,7 @@ Astro static site, content fetched at build time from a self-hosted Directus CMS
 
 ## Evidence on Hand
 
-51 real tattoo works live in Directus (ids 53–103), each with a real photo/video gallery and a real Spanish caption written in a confident, humorous voice (references fictional characters or public personas without naming real people directly, per an explicit project rule). Style tags in use: Realismo, Color, Black and Grey, Cover Up. No placeholder/lorem content in this surface.
+51 real tattoo works live in Directus (ids 53–103), each with a real photo/video gallery and a real Spanish caption written in a confident, humorous voice (references fictional characters or public personas without naming real people directly, per an explicit project rule). Style tags in use: Color, Black and Grey, Cover Up ("Realismo" was removed from every record and from all filters -- nearly all of Nico's work is realism, so it never functioned as a useful filter). No placeholder/lorem content in this surface.
 
 ## Product Principles
 

@@ -222,14 +222,20 @@ if (!perfil.name) {
   {/* Explorar por estilo -- entra directo a la galería con el filtro puesto */}
   <section class="w-full max-w-5xl mx-auto px-6">
     <div class="grid grid-cols-3 border-t border-tattoo-gold/10">
-      <a href="/es/galeria?filter=color" class="flex items-center justify-center text-center py-6 md:py-7 border-r border-tattoo-gold/10 text-tattoo-silver hover:text-tattoo-gold hover:bg-white/[0.03] transition-colors duration-300">
-        <span class="text-[10px] md:text-sm tracking-[0.2em] md:tracking-[0.3em] uppercase font-medium">Color</span>
+      <a href="/es/galeria?filter=color" class="group relative flex flex-col items-center justify-center gap-3 py-8 md:py-11 border-r border-tattoo-gold/10 overflow-hidden transition-colors duration-500 hover:bg-gradient-to-b hover:from-tattoo-gold/[0.05] hover:to-transparent">
+        <svg class="w-5 h-5 md:w-6 md:h-6 text-tattoo-silver/60 group-hover:text-tattoo-gold transition-colors duration-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-3.6 4.4-6.5 7.9-6.5 11.2a6.5 6.5 0 0 0 13 0C18.5 10.9 15.6 7.4 12 3z"/></svg>
+        <span class="text-[10px] md:text-sm tracking-[0.25em] uppercase font-medium text-tattoo-silver group-hover:text-white transition-colors duration-500">Color</span>
+        <span class="h-px w-0 bg-tattoo-gold group-hover:w-8 transition-all duration-500 ease-out"></span>
       </a>
-      <a href="/es/galeria?filter=black%20and%20grey" class="flex items-center justify-center text-center py-6 md:py-7 border-r border-tattoo-gold/10 text-tattoo-silver hover:text-tattoo-gold hover:bg-white/[0.03] transition-colors duration-300">
-        <span class="text-[10px] md:text-sm tracking-[0.2em] md:tracking-[0.3em] uppercase font-medium">Black &amp; Grey</span>
+      <a href="/es/galeria?filter=black%20and%20grey" class="group relative flex flex-col items-center justify-center gap-3 py-8 md:py-11 border-r border-tattoo-gold/10 overflow-hidden transition-colors duration-500 hover:bg-gradient-to-b hover:from-tattoo-gold/[0.05] hover:to-transparent">
+        <svg class="w-5 h-5 md:w-6 md:h-6 text-tattoo-silver/60 group-hover:text-tattoo-gold transition-colors duration-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none"/></svg>
+        <span class="text-[10px] md:text-sm tracking-[0.25em] uppercase font-medium text-tattoo-silver group-hover:text-white transition-colors duration-500">Black &amp; Grey</span>
+        <span class="h-px w-0 bg-tattoo-gold group-hover:w-8 transition-all duration-500 ease-out"></span>
       </a>
-      <a href="/es/galeria?filter=cover%20up" class="flex items-center justify-center text-center py-6 md:py-7 text-tattoo-silver hover:text-tattoo-gold hover:bg-white/[0.03] transition-colors duration-300">
-        <span class="text-[10px] md:text-sm tracking-[0.2em] md:tracking-[0.3em] uppercase font-medium">Cover-Ups</span>
+      <a href="/es/galeria?filter=cover%20up" class="group relative flex flex-col items-center justify-center gap-3 py-8 md:py-11 overflow-hidden transition-colors duration-500 hover:bg-gradient-to-b hover:from-tattoo-gold/[0.05] hover:to-transparent">
+        <svg class="w-5 h-5 md:w-6 md:h-6 text-tattoo-silver/60 group-hover:text-tattoo-gold transition-colors duration-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 3.5 4 8 12 12.5 20 8 12 3.5"/><polyline points="4 15 12 19.5 20 15"/></svg>
+        <span class="text-[10px] md:text-sm tracking-[0.25em] uppercase font-medium text-tattoo-silver group-hover:text-white transition-colors duration-500">Cover-Ups</span>
+        <span class="h-px w-0 bg-tattoo-gold group-hover:w-8 transition-all duration-500 ease-out"></span>
       </a>
     </div>
     <div class="border-b border-tattoo-gold/10"></div>

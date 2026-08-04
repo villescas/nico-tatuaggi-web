@@ -116,8 +116,21 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
         {slides.map((slide, i) => (
             <div class="slide absolute inset-0 flex items-center justify-center p-0 md:p-10 transition-all duration-300 ease-out" data-index={i} style={i === 0 ? '' : 'opacity:0; pointer-events:none;'}>
                 {slide.kind === 'video' ? (
-                    <div class="w-full max-w-4xl aspect-video h-auto bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5 flex items-center justify-center">
-                        <video src={slide.src} class="w-full h-full object-contain" loop muted playsinline controls preload={i === 0 ? 'auto' : 'none'}></video>
+                    // No fixed aspect-video box: a vertical tattoo video forced into a
+                    // 16:9 frame renders tiny and letterboxed. The video sizes itself
+                    // by its own real aspect ratio, same treatment as photos.
+                    // Native <video controls> is intentionally not used -- its built-in
+                    // fullscreen button hands the whole interaction over to the OS
+                    // video player, which visually buries our close/nav buttons behind
+                    // it with no way back except the native player's own exit gesture.
+                    <div class="lightbox-video-wrap relative max-w-full max-h-full flex items-center justify-center">
+                        <video src={slide.src} class="lightbox-video max-w-full max-h-full object-contain rounded-lg border border-white/10 shadow-2xl shadow-tattoo-gold/5" loop muted playsinline disablePictureInPicture controlsList="nofullscreen noremoteplayback nodownload" preload={i === 0 ? 'auto' : 'none'}></video>
+                        <button class="video-toggle absolute inset-0 flex items-center justify-center" aria-label="Reproducir o pausar video">
+                            <span class="video-toggle-icon flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-full bg-black/50 backdrop-blur-md border border-white/20 text-white transition-all duration-300">
+                                <svg class="icon-play w-6 h-6 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                <svg class="icon-pause w-6 h-6 hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                            </span>
+                        </button>
                     </div>
                 ) : slide.kind === 'youtube' ? (
                     <div class="w-full max-w-4xl aspect-video h-auto bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5">
@@ -128,7 +141,7 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
                         <iframe data-src={slide.src} class="lazy-iframe w-full h-full border-none absolute inset-0" scrolling="no" allowtransparency="true" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                     </div>
                 ) : (
-                    <img src={slide.src} alt={titulo} loading="lazy" class="max-w-full max-h-full object-contain drop-shadow-2xl select-none" />
+                    <img src={slide.src} alt={titulo} loading="lazy" class="zoomable-image max-w-full max-h-full object-contain drop-shadow-2xl select-none [touch-action:none]" />
                 )}
             </div>
         ))}
@@ -193,6 +206,7 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
       const nextBtn = modal.querySelector('.slide-next');
       const counterEl = modal.querySelector('.slide-counter');
       let activeIndex = 0;
+      let anyImageZoomed = false;
 
       // Cover video in the grid thumbnail never loads or plays until it's
       // actually being looked at -- on desktop that means hovering the card
@@ -232,6 +246,146 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
           }
       }
 
+      // Lightbox video: our own play/pause, no native <video controls> (that's
+      // what was handing the interaction over to the OS video player and
+      // burying the close/nav buttons -- see the comment on the markup).
+      slideEls.forEach((slideEl) => {
+          const video = slideEl.querySelector('.lightbox-video');
+          const toggleBtn = slideEl.querySelector('.video-toggle');
+          if (!video || !toggleBtn) return;
+          const iconPlay = toggleBtn.querySelector('.icon-play');
+          const iconPause = toggleBtn.querySelector('.icon-pause');
+          const iconWrap = toggleBtn.querySelector('.video-toggle-icon');
+          let fadeTimer = null;
+
+          const syncIcon = () => {
+              iconPlay.classList.toggle('hidden', !video.paused);
+              iconPause.classList.toggle('hidden', video.paused);
+              clearTimeout(fadeTimer);
+              iconWrap.style.opacity = '1';
+              if (!video.paused) {
+                  // Flash the pause icon so the tap feels acknowledged, then let
+                  // it fade out of the way -- reappears on pause or the next tap.
+                  fadeTimer = setTimeout(() => { if (!video.paused) iconWrap.style.opacity = '0'; }, 900);
+              }
+          };
+
+          toggleBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              if (video.paused) video.play().catch(() => {}); else video.pause();
+              // Don't wait on the native play/pause event to reflect the tap --
+              // sync immediately, the event listeners below are a backstop.
+              syncIcon();
+          });
+          video.addEventListener('play', syncIcon);
+          video.addEventListener('pause', syncIcon);
+          syncIcon();
+      });
+
+      // Pinch-to-zoom + drag-to-pan on photos. Every photo opens fully visible
+      // (object-contain, never cropped); this is how someone gets closer to a
+      // detail without us guessing a crop in advance. Panning only takes over
+      // single-finger drags once actually zoomed in -- at scale 1 a drag is
+      // still the swipe-to-next-photo gesture from the stage-level listener.
+      const MAX_ZOOM = 3.5;
+      const DOUBLE_TAP_ZOOM = 2.5;
+      const touchDistance = (a, b) => Math.hypot(b.clientX - a.clientX, b.clientY - a.clientY);
+
+      slideEls.forEach((slideEl) => {
+          const img = slideEl.querySelector('.zoomable-image');
+          if (!img) return;
+
+          let scale = 1, translateX = 0, translateY = 0;
+          let startScale = 1, startTranslateX = 0, startTranslateY = 0;
+          let pinchStartDist = 0;
+          let isPanning = false;
+          let panStartX = 0, panStartY = 0;
+          let lastTapAt = 0;
+
+          const apply = () => {
+              img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+              anyImageZoomed = scale > 1.02;
+          };
+
+          const clamp = () => {
+              const rect = img.getBoundingClientRect();
+              const overflowX = Math.max(0, (rect.width * scale - rect.width) / 2);
+              const overflowY = Math.max(0, (rect.height * scale - rect.height) / 2);
+              translateX = Math.min(overflowX, Math.max(-overflowX, translateX));
+              translateY = Math.min(overflowY, Math.max(-overflowY, translateY));
+          };
+
+          img._resetZoom = () => {
+              scale = 1; translateX = 0; translateY = 0;
+              anyImageZoomed = false;
+              img.style.transition = 'transform 200ms ease-out';
+              img.style.transform = 'translate(0px, 0px) scale(1)';
+          };
+
+          const zoomAt = (targetScale) => {
+              scale = targetScale;
+              translateX = 0; translateY = 0;
+              clamp();
+              img.style.transition = 'transform 200ms ease-out';
+              apply();
+          };
+
+          img.addEventListener('touchstart', (e) => {
+              if (e.touches.length === 2) {
+                  pinchStartDist = touchDistance(e.touches[0], e.touches[1]);
+                  startScale = scale;
+              } else if (e.touches.length === 1 && scale > 1) {
+                  isPanning = true;
+                  panStartX = e.touches[0].clientX - translateX;
+                  panStartY = e.touches[0].clientY - translateY;
+              }
+          }, { passive: true });
+
+          img.addEventListener('touchmove', (e) => {
+              if (e.touches.length === 2) {
+                  e.preventDefault();
+                  img.style.transition = 'none';
+                  const dist = touchDistance(e.touches[0], e.touches[1]);
+                  scale = Math.min(MAX_ZOOM, Math.max(1, startScale * (dist / pinchStartDist)));
+                  clamp();
+                  apply();
+              } else if (isPanning && e.touches.length === 1) {
+                  e.preventDefault();
+                  img.style.transition = 'none';
+                  translateX = e.touches[0].clientX - panStartX;
+                  translateY = e.touches[0].clientY - panStartY;
+                  clamp();
+                  apply();
+              }
+          }, { passive: false });
+
+          img.addEventListener('touchend', (e) => {
+              if (e.touches.length === 0) {
+                  isPanning = false;
+                  if (scale <= 1.02) {
+                      img._resetZoom();
+                  } else {
+                      clamp();
+                      img.style.transition = 'transform 200ms ease-out';
+                      apply();
+                  }
+
+                  const now = Date.now();
+                  if (now - lastTapAt < 300) {
+                      // Double tap: toggle between fit and a comfortable zoomed-in level.
+                      zoomAt(scale > 1.02 ? 1 : DOUBLE_TAP_ZOOM);
+                      lastTapAt = 0;
+                  } else {
+                      lastTapAt = now;
+                  }
+              }
+          });
+
+          img.addEventListener('touchcancel', () => {
+              isPanning = false;
+          });
+      });
+
       // Prev/next in the lightbox pages through this work's own photos/videos;
       // past either end it moves to the next/previous tattoo card in the grid
       // (in DOM order) so browsing the whole portfolio doesn't require closing
@@ -263,6 +417,10 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
       const deactivateSlide = (el) => {
           const video = el.querySelector('video');
           if (video) video.pause();
+          // Every photo opens fully visible next time -- no leftover zoom/pan
+          // from a previous visit to this slide.
+          const img = el.querySelector('.zoomable-image');
+          if (img && img._resetZoom) img._resetZoom();
       };
 
       // direction: 1 = advancing (next), -1 = going back (prev). Ties the slide
@@ -339,7 +497,7 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
           const SWIPE_THRESHOLD = 48;
 
           stageArea.addEventListener('touchstart', (e) => {
-              if (e.touches.length !== 1) return;
+              if (e.touches.length !== 1 || anyImageZoomed) return;
               touchStartX = e.touches[0].clientX;
               touchStartY = e.touches[0].clientY;
               touchTracking = true;
@@ -348,12 +506,21 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
           stageArea.addEventListener('touchend', (e) => {
               if (!touchTracking) return;
               touchTracking = false;
+              if (anyImageZoomed) return; // a pinch/pan gesture ended, not a swipe
               const touch = e.changedTouches[0];
               const dx = touch.clientX - touchStartX;
               const dy = touch.clientY - touchStartY;
               if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy) * 1.5) {
                   if (dx < 0) goNext(); else goPrev();
               }
+          }, { passive: true });
+
+          // If the browser hands the gesture to something else mid-touch (the
+          // exact failure mode from the native-fullscreen video bug), reset
+          // instead of leaving touchTracking stuck -- otherwise the next
+          // innocent tap reads stale coordinates and can fire a phantom swipe.
+          stageArea.addEventListener('touchcancel', () => {
+              touchTracking = false;
           }, { passive: true });
       }
 
