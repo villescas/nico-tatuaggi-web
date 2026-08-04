@@ -207,16 +207,32 @@ if (!perfil.name) {
     
     <div class="flex flex-wrap justify-center gap-8">
       {viajes.map((viaje) => (
-        <Destination 
-          city={viaje.city} 
-          country={viaje.country} 
-          startDate={viaje.startDate} 
+        <Destination
+          city={viaje.city}
+          country={viaje.country}
+          startDate={viaje.startDate}
           endDate={viaje.endDate}
           studioName={viaje.studioName}
           studioLink={viaje.studioLink}
         />
       ))}
     </div>
+  </section>
+
+  {/* Browse by style -- goes straight into the gallery with the filter already applied */}
+  <section class="w-full max-w-5xl mx-auto px-6">
+    <div class="grid grid-cols-3 border-t border-tattoo-gold/10">
+      <a href="/en/galeria?filter=color" class="flex items-center justify-center text-center py-6 md:py-7 border-r border-tattoo-gold/10 text-tattoo-silver hover:text-tattoo-gold hover:bg-white/[0.03] transition-colors duration-300">
+        <span class="text-[10px] md:text-sm tracking-[0.2em] md:tracking-[0.3em] uppercase font-medium">Color</span>
+      </a>
+      <a href="/en/galeria?filter=black%20and%20grey" class="flex items-center justify-center text-center py-6 md:py-7 border-r border-tattoo-gold/10 text-tattoo-silver hover:text-tattoo-gold hover:bg-white/[0.03] transition-colors duration-300">
+        <span class="text-[10px] md:text-sm tracking-[0.2em] md:tracking-[0.3em] uppercase font-medium">Black &amp; Grey</span>
+      </a>
+      <a href="/en/galeria?filter=cover%20up" class="flex items-center justify-center text-center py-6 md:py-7 text-tattoo-silver hover:text-tattoo-gold hover:bg-white/[0.03] transition-colors duration-300">
+        <span class="text-[10px] md:text-sm tracking-[0.2em] md:tracking-[0.3em] uppercase font-medium">Cover-Ups</span>
+      </a>
+    </div>
+    <div class="border-b border-tattoo-gold/10"></div>
   </section>
 
   {/* Newsletter / Form */}

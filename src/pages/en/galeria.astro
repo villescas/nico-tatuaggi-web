@@ -132,6 +132,16 @@ if (tatuajes.length === 0) {
                 });
             });
         });
+
+        // Arriving from a "Browse by style" link on the home page (?filter=cover%20up)
+        // applies that filter alone, no need for the visitor to touch it again.
+        const requestedFilter = new URLSearchParams(window.location.search).get('filter');
+        if (requestedFilter) {
+            const target = Array.from(buttons).find(
+                (btn) => btn.getAttribute('data-filter') === requestedFilter.toLowerCase()
+            );
+            if (target) target.click();
+        }
     });
 </script>
 

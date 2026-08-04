@@ -132,6 +132,16 @@ if (tatuajes.length === 0) {
                 });
             });
         });
+
+        // Llegar desde un link "Explorá por estilo" en la home (?filter=cover%20up)
+        // aplica ese filtro solo, sin que el visitante tenga que tocarlo de nuevo.
+        const requestedFilter = new URLSearchParams(window.location.search).get('filter');
+        if (requestedFilter) {
+            const target = Array.from(buttons).find(
+                (btn) => btn.getAttribute('data-filter') === requestedFilter.toLowerCase()
+            );
+            if (target) target.click();
+        }
     });
 </script>
 

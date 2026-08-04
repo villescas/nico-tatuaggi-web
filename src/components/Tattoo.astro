@@ -60,7 +60,7 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
 <div class="relative group overflow-hidden border border-tattoo-gold/20 hover:border-tattoo-gold/60 transition-all duration-500 h-full w-full cursor-pointer tattoo-trigger flex flex-col hover-subtle-pulse" data-target={`modal-${uniqueId}`}>
   <div class="relative w-full bg-[#050505]">
       {coverIsVideo ? (
-          <video src={cover.src} class="cover-video w-full h-auto aspect-[4/5] object-cover transition-all duration-700 pointer-events-none" loop muted playsinline preload="metadata"></video>
+          <video data-src={cover.src} poster={coverThumb || undefined} class="cover-video w-full h-auto aspect-[4/5] object-cover transition-all duration-700 pointer-events-none" loop muted playsinline preload="none"></video>
       ) : coverThumb ? (
           <img src={coverThumb} alt={titulo} loading="lazy" class="w-full h-auto aspect-[4/5] object-cover transition-all duration-700" />
       ) : (
@@ -109,10 +109,12 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
 {/* 2. LIGHTBOX MODAL (Oculto por defecto) — imagen y texto en zonas separadas y fijas */}
 <div id={`modal-${uniqueId}`} class="fixed inset-0 z-[100] bg-tattoo-black opacity-0 pointer-events-none transition-opacity duration-500 flex flex-col md:flex-row">
 
-    {/* Stage: la foto/video, nunca recortada ni tapada. Swipeable en mobile. */}
-    <div class="stage-area relative flex-1 md:flex-[0_0_68%] h-[56vh] md:h-full min-h-0 bg-black overflow-hidden flex items-center justify-center [touch-action:pan-y]">
+    {/* Stage: la foto/video, nunca recortada ni tapada. Ocupa todo lo que el
+        panel de info no necesita (no una altura fija), asi una foto angosta
+        no queda chica con barras negras a los costados. Swipeable en mobile. */}
+    <div class="stage-area relative flex-1 min-h-0 md:flex-[0_0_68%] md:h-full bg-black overflow-hidden flex items-center justify-center [touch-action:pan-y]">
         {slides.map((slide, i) => (
-            <div class="slide absolute inset-0 flex items-center justify-center p-4 md:p-10 transition-all duration-300 ease-out" data-index={i} style={i === 0 ? '' : 'opacity:0; pointer-events:none;'}>
+            <div class="slide absolute inset-0 flex items-center justify-center p-0 md:p-10 transition-all duration-300 ease-out" data-index={i} style={i === 0 ? '' : 'opacity:0; pointer-events:none;'}>
                 {slide.kind === 'video' ? (
                     <div class="w-full max-w-4xl aspect-video h-auto bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5 flex items-center justify-center">
                         <video src={slide.src} class="w-full h-full object-contain" loop muted playsinline controls preload={i === 0 ? 'auto' : 'none'}></video>
@@ -152,8 +154,10 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
     {/* Separador (solo desktop) */}
     <div class="hidden md:block w-px bg-gradient-to-b from-transparent via-tattoo-gold/25 to-transparent"></div>
 
-    {/* Panel de info: zona propia, con su propio scroll -- nunca se superpone a la foto */}
-    <div class="info-panel relative flex-1 md:flex-[0_0_32%] md:max-w-[440px] md:min-w-[320px] bg-[#0a0a0a] -mt-5 md:mt-0 rounded-t-[22px] md:rounded-none shadow-[0_-10px_30px_rgba(0,0,0,0.5)] md:shadow-none overflow-y-auto overscroll-contain md:flex md:items-center">
+    {/* Panel de info: ocupa solo lo que su contenido necesita (nunca le "roba"
+        alto a la foto de arranque), con un tope + scroll propio para captions
+        largas. Zona propia -- nunca se superpone a la foto. */}
+    <div class="info-panel relative flex-none max-h-[42vh] md:max-h-none md:flex-[0_0_32%] md:max-w-[440px] md:min-w-[320px] bg-[#0a0a0a] -mt-5 md:mt-0 rounded-t-[22px] md:rounded-none shadow-[0_-10px_30px_rgba(0,0,0,0.5)] md:shadow-none overflow-y-auto overscroll-contain md:flex md:items-center">
         <div class="px-6 pt-3 pb-[calc(2rem+env(safe-area-inset-bottom))] md:px-10 md:py-14 w-full">
             <div class="md:hidden w-9 h-1 rounded-full bg-white/20 mx-auto mb-5"></div>
 
@@ -190,21 +194,42 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
       const counterEl = modal.querySelector('.slide-counter');
       let activeIndex = 0;
 
-      // Cover video in the grid thumbnail only plays while its card is actually
-      // on screen -- with ~50 cards on the page, autoplaying all of them at once
-      // overloads the main thread and makes every video look choppy.
+      // Cover video in the grid thumbnail never loads or plays until it's
+      // actually being looked at -- on desktop that means hovering the card
+      // (like the reference site), on touch devices it means the card is
+      // visibly on screen (there's no hover to gate on). With ~50 cards on
+      // the page, loading/playing all of them upfront both saturates the
+      // main thread (choppy playback) and fires ~16 unnecessary network
+      // requests on page load, which is the "slow" the client is feeling.
       const coverVideo = trigger.querySelector('.cover-video');
       if (coverVideo) {
-          const coverObserver = new IntersectionObserver((entries) => {
-              entries.forEach((entry) => {
-                  if (entry.isIntersecting) {
-                      coverVideo.play().catch(() => {});
-                  } else {
-                      coverVideo.pause();
-                  }
+          const ensureLoaded = () => {
+              if (!coverVideo.getAttribute('src') && coverVideo.dataset.src) {
+                  coverVideo.src = coverVideo.dataset.src;
+              }
+          };
+          const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+          if (canHover) {
+              trigger.addEventListener('mouseenter', () => {
+                  ensureLoaded();
+                  coverVideo.play().catch(() => {});
               });
-          }, { threshold: 0.15 });
-          coverObserver.observe(coverVideo);
+              trigger.addEventListener('mouseleave', () => {
+                  coverVideo.pause();
+              });
+          } else {
+              const coverObserver = new IntersectionObserver((entries) => {
+                  entries.forEach((entry) => {
+                      if (entry.isIntersecting) {
+                          ensureLoaded();
+                          coverVideo.play().catch(() => {});
+                      } else {
+                          coverVideo.pause();
+                      }
+                  });
+              }, { threshold: 0.35 });
+              coverObserver.observe(coverVideo);
+          }
       }
 
       // Prev/next in the lightbox pages through this work's own photos/videos;
