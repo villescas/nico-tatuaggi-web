@@ -106,32 +106,19 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
   )}
 </div>
 
-{/* 2. LIGHTBOX MODAL (Oculto por defecto) */}
-<div id={`modal-${uniqueId}`} class="fixed inset-0 z-[100] bg-[#050505]/98 backdrop-blur-xl opacity-0 pointer-events-none transition-opacity duration-500 flex flex-col items-center justify-center">
-    
-    {/* Top Bar */}
-    <div class="absolute top-0 left-0 w-full p-4 md:p-6 flex justify-between items-center z-[110] bg-gradient-to-b from-black/80 to-transparent">
-        <div>
-            <h4 class="text-tattoo-gold font-bold uppercase tracking-widest text-lg md:text-xl drop-shadow-lg">{titulo}</h4>
-            <p class="text-white/60 text-xs tracking-[0.2em] mt-1 uppercase relative inline-block">
-                {sede}
-            </p>
-        </div>
-        <button class="modal-close text-white hover:text-tattoo-gold bg-white/5 hover:bg-white/10 rounded-full p-3 backdrop-blur-md transition-colors" aria-label="Cerrar media">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-        </button>
-    </div>
+{/* 2. LIGHTBOX MODAL (Oculto por defecto) — imagen y texto en zonas separadas y fijas */}
+<div id={`modal-${uniqueId}`} class="fixed inset-0 z-[100] bg-tattoo-black opacity-0 pointer-events-none transition-opacity duration-500 flex flex-col md:flex-row">
 
-    {/* Media Track */}
-    <div class="relative w-full h-[80vh] md:max-w-5xl md:h-[85vh] flex items-center justify-center overflow-hidden">
+    {/* Stage: la foto/video, nunca recortada ni tapada. Swipeable en mobile. */}
+    <div class="stage-area relative flex-1 md:flex-[0_0_68%] h-[56vh] md:h-full min-h-0 bg-black overflow-hidden flex items-center justify-center [touch-action:pan-y]">
         {slides.map((slide, i) => (
-            <div class="slide absolute inset-0 flex items-center justify-center p-4 transition-opacity duration-300" data-index={i} style={i === 0 ? '' : 'opacity:0; pointer-events:none;'}>
+            <div class="slide absolute inset-0 flex items-center justify-center p-4 md:p-10 transition-all duration-300 ease-out" data-index={i} style={i === 0 ? '' : 'opacity:0; pointer-events:none;'}>
                 {slide.kind === 'video' ? (
-                    <div class="w-full max-w-5xl aspect-video h-auto bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5 flex items-center justify-center">
+                    <div class="w-full max-w-4xl aspect-video h-auto bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5 flex items-center justify-center">
                         <video src={slide.src} class="w-full h-full object-contain" loop muted playsinline controls preload={i === 0 ? 'auto' : 'none'}></video>
                     </div>
                 ) : slide.kind === 'youtube' ? (
-                    <div class="w-full max-w-5xl aspect-video h-auto bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5">
+                    <div class="w-full max-w-4xl aspect-video h-auto bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5">
                         <iframe data-src={slide.src} class="lazy-iframe w-full h-full border-none absolute inset-0" scrolling="no" allowtransparency="true" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                     </div>
                 ) : slide.kind === 'instagram' ? (
@@ -144,17 +131,49 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
             </div>
         ))}
 
+        <button class="modal-close absolute top-4 right-4 md:top-6 md:right-6 z-[110] text-white hover:text-tattoo-gold bg-white/5 hover:bg-white/10 rounded-full p-3 backdrop-blur-md transition-colors" aria-label="Cerrar media">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+
         <button class="slide-prev absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-[105] text-white hover:text-tattoo-gold bg-black/50 hover:bg-black/70 rounded-full p-3 backdrop-blur-md transition-colors" aria-label="Trabajo/foto anterior">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
         <button class="slide-next absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-[105] text-white hover:text-tattoo-gold bg-black/50 hover:bg-black/70 rounded-full p-3 backdrop-blur-md transition-colors" aria-label="Siguiente trabajo/foto">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
         </button>
+
         {slides.length > 1 && (
-            <div class="slide-counter absolute bottom-4 left-1/2 -translate-x-1/2 z-[105] bg-black/60 backdrop-blur-md rounded-full px-3 py-1 border border-white/20 text-white text-[11px] font-bold tracking-widest">
+            <div class="slide-counter absolute top-4 left-4 md:top-6 md:left-6 z-[105] bg-black/60 backdrop-blur-md rounded-full px-3 py-1 border border-white/20 text-white text-[11px] font-bold tracking-widest">
                 1/{slides.length}
             </div>
         )}
+    </div>
+
+    {/* Separador (solo desktop) */}
+    <div class="hidden md:block w-px bg-gradient-to-b from-transparent via-tattoo-gold/25 to-transparent"></div>
+
+    {/* Panel de info: zona propia, con su propio scroll -- nunca se superpone a la foto */}
+    <div class="info-panel relative flex-1 md:flex-[0_0_32%] md:max-w-[440px] md:min-w-[320px] bg-[#0a0a0a] -mt-5 md:mt-0 rounded-t-[22px] md:rounded-none shadow-[0_-10px_30px_rgba(0,0,0,0.5)] md:shadow-none overflow-y-auto overscroll-contain md:flex md:items-center">
+        <div class="px-6 pt-3 pb-[calc(2rem+env(safe-area-inset-bottom))] md:px-10 md:py-14 w-full">
+            <div class="md:hidden w-9 h-1 rounded-full bg-white/20 mx-auto mb-5"></div>
+
+            <h4 class="font-display text-white text-base md:text-xl font-semibold leading-snug mb-4 md:mb-6">{titulo}</h4>
+
+            <div class="hidden md:block w-11 h-px bg-tattoo-gold/40 mb-6"></div>
+
+            <div class="flex items-center gap-2 text-tattoo-silver text-[11px] md:text-xs tracking-[0.15em] uppercase">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-tattoo-gold flex-shrink-0"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+                {sede}
+            </div>
+
+            {tagsArray.length > 0 && (
+                <div class="flex flex-wrap gap-2 mt-5">
+                    {tagsArray.map(tag => (
+                        <span class="text-[9px] font-bold text-white/50 border border-white/10 bg-white/5 px-2.5 py-1.5 rounded-md uppercase tracking-widest">{tag}</span>
+                    ))}
+                </div>
+            )}
+        </div>
     </div>
 </div>
 
@@ -201,11 +220,11 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
           allTriggers[siblingIndex].click();
       };
       const goNext = () => {
-          if (activeIndex < slideEls.length - 1) showSlide(activeIndex + 1);
+          if (activeIndex < slideEls.length - 1) showSlide(activeIndex + 1, 1);
           else goToSibling(1);
       };
       const goPrev = () => {
-          if (activeIndex > 0) showSlide(activeIndex - 1);
+          if (activeIndex > 0) showSlide(activeIndex - 1, -1);
           else goToSibling(-1);
       };
 
@@ -221,14 +240,40 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
           if (video) video.pause();
       };
 
-      const showSlide = (index) => {
+      // direction: 1 = advancing (next), -1 = going back (prev). Ties the slide
+      // motion to the gesture that triggered it -- swipe left visibly moves the
+      // photo left, instead of every change looking like an identical crossfade.
+      const showSlide = (index, direction = 1) => {
           if (!slideEls.length) return;
+          const prevIndex = activeIndex;
           activeIndex = (index + slideEls.length) % slideEls.length;
           slideEls.forEach((el, i) => {
-              const isActive = i === activeIndex;
-              el.style.opacity = isActive ? '1' : '0';
-              el.style.pointerEvents = isActive ? 'auto' : 'none';
-              if (isActive) activateSlide(el); else deactivateSlide(el);
+              if (i === activeIndex) {
+                  el.style.transition = 'none';
+                  el.style.opacity = '0';
+                  el.style.transform = `translateX(${direction * 28}px)`;
+                  el.style.pointerEvents = 'auto';
+                  void el.offsetWidth; // force reflow so the transition below actually animates
+                  el.style.transition = '';
+                  requestAnimationFrame(() => {
+                      el.style.opacity = '1';
+                      el.style.transform = 'translateX(0)';
+                  });
+                  activateSlide(el);
+              } else if (i === prevIndex) {
+                  el.style.opacity = '0';
+                  el.style.transform = `translateX(${direction * -28}px)`;
+                  el.style.pointerEvents = 'none';
+                  deactivateSlide(el);
+              } else {
+                  el.style.transition = 'none';
+                  el.style.opacity = '0';
+                  el.style.transform = 'translateX(0)';
+                  el.style.pointerEvents = 'none';
+                  void el.offsetWidth;
+                  el.style.transition = '';
+                  deactivateSlide(el);
+              }
           });
           if (counterEl) counterEl.textContent = `${activeIndex + 1}/${slideEls.length}`;
       };
@@ -254,10 +299,39 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
 
       closeBtn.addEventListener('click', closeModal);
       modal.addEventListener('click', (e) => {
-          if (e.target === modal || e.target.closest('.relative.w-full.h-\\[80vh\\]') === e.target) {
-              closeModal();
-          }
+          if (e.target === modal) closeModal();
       });
+
+      // Swipe left/right on the photo/video area moves to the next/previous
+      // slide (same as the arrows). Scoped to the stage only, never the info
+      // panel below/beside it, so dragging through a long caption on mobile
+      // scrolls text instead of changing the photo.
+      const stageArea = modal.querySelector('.stage-area');
+      if (stageArea) {
+          let touchStartX = 0;
+          let touchStartY = 0;
+          let touchTracking = false;
+          const SWIPE_THRESHOLD = 48;
+
+          stageArea.addEventListener('touchstart', (e) => {
+              if (e.touches.length !== 1) return;
+              touchStartX = e.touches[0].clientX;
+              touchStartY = e.touches[0].clientY;
+              touchTracking = true;
+          }, { passive: true });
+
+          stageArea.addEventListener('touchend', (e) => {
+              if (!touchTracking) return;
+              touchTracking = false;
+              const touch = e.changedTouches[0];
+              const dx = touch.clientX - touchStartX;
+              const dy = touch.clientY - touchStartY;
+              if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy) * 1.5) {
+                  if (dx < 0) goNext(); else goPrev();
+              }
+          }, { passive: true });
+      }
+
       document.addEventListener('keydown', (e) => {
           if (modal.classList.contains('pointer-events-none')) return;
           if (e.key === 'Escape') closeModal();
