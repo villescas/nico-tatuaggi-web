@@ -60,7 +60,7 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
 <div class="relative group overflow-hidden border border-tattoo-gold/20 hover:border-tattoo-gold/60 transition-all duration-500 h-full w-full cursor-pointer tattoo-trigger flex flex-col hover-subtle-pulse" data-target={`modal-${uniqueId}`}>
   <div class="relative w-full bg-[#050505]">
       {coverIsVideo ? (
-          <video src={cover.src} class="w-full h-auto aspect-[4/5] object-cover transition-all duration-700 pointer-events-none" autoplay loop muted playsinline preload="metadata"></video>
+          <video src={cover.src} class="cover-video w-full h-auto aspect-[4/5] object-cover transition-all duration-700 pointer-events-none" loop muted playsinline preload="metadata"></video>
       ) : coverThumb ? (
           <img src={coverThumb} alt={titulo} loading="lazy" class="w-full h-auto aspect-[4/5] object-cover transition-all duration-700" />
       ) : (
@@ -144,18 +144,16 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
             </div>
         ))}
 
+        <button class="slide-prev absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-[105] text-white hover:text-tattoo-gold bg-black/50 hover:bg-black/70 rounded-full p-3 backdrop-blur-md transition-colors" aria-label="Trabajo/foto anterior">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <button class="slide-next absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-[105] text-white hover:text-tattoo-gold bg-black/50 hover:bg-black/70 rounded-full p-3 backdrop-blur-md transition-colors" aria-label="Siguiente trabajo/foto">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
         {slides.length > 1 && (
-            <>
-                <button class="slide-prev absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-[105] text-white hover:text-tattoo-gold bg-black/50 hover:bg-black/70 rounded-full p-3 backdrop-blur-md transition-colors" aria-label="Anterior">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                </button>
-                <button class="slide-next absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-[105] text-white hover:text-tattoo-gold bg-black/50 hover:bg-black/70 rounded-full p-3 backdrop-blur-md transition-colors" aria-label="Siguiente">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                </button>
-                <div class="slide-counter absolute bottom-4 left-1/2 -translate-x-1/2 z-[105] bg-black/60 backdrop-blur-md rounded-full px-3 py-1 border border-white/20 text-white text-[11px] font-bold tracking-widest">
-                    1/{slides.length}
-                </div>
-            </>
+            <div class="slide-counter absolute bottom-4 left-1/2 -translate-x-1/2 z-[105] bg-black/60 backdrop-blur-md rounded-full px-3 py-1 border border-white/20 text-white text-[11px] font-bold tracking-widest">
+                1/{slides.length}
+            </div>
         )}
     </div>
 </div>
@@ -172,6 +170,44 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
       const nextBtn = modal.querySelector('.slide-next');
       const counterEl = modal.querySelector('.slide-counter');
       let activeIndex = 0;
+
+      // Cover video in the grid thumbnail only plays while its card is actually
+      // on screen -- with ~50 cards on the page, autoplaying all of them at once
+      // overloads the main thread and makes every video look choppy.
+      const coverVideo = trigger.querySelector('.cover-video');
+      if (coverVideo) {
+          const coverObserver = new IntersectionObserver((entries) => {
+              entries.forEach((entry) => {
+                  if (entry.isIntersecting) {
+                      coverVideo.play().catch(() => {});
+                  } else {
+                      coverVideo.pause();
+                  }
+              });
+          }, { threshold: 0.15 });
+          coverObserver.observe(coverVideo);
+      }
+
+      // Prev/next in the lightbox pages through this work's own photos/videos;
+      // past either end it moves to the next/previous tattoo card in the grid
+      // (in DOM order) so browsing the whole portfolio doesn't require closing
+      // and reopening each one.
+      const goToSibling = (direction) => {
+          const allTriggers = Array.from(document.querySelectorAll('.tattoo-trigger'));
+          const myIndex = allTriggers.indexOf(trigger);
+          const siblingIndex = myIndex + direction;
+          if (myIndex === -1 || siblingIndex < 0 || siblingIndex >= allTriggers.length) return;
+          closeModal();
+          allTriggers[siblingIndex].click();
+      };
+      const goNext = () => {
+          if (activeIndex < slideEls.length - 1) showSlide(activeIndex + 1);
+          else goToSibling(1);
+      };
+      const goPrev = () => {
+          if (activeIndex > 0) showSlide(activeIndex - 1);
+          else goToSibling(-1);
+      };
 
       const activateSlide = (el) => {
           const iframe = el.querySelector('.lazy-iframe');
@@ -197,8 +233,8 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
           if (counterEl) counterEl.textContent = `${activeIndex + 1}/${slideEls.length}`;
       };
 
-      if (prevBtn) prevBtn.addEventListener('click', (e) => { e.stopPropagation(); showSlide(activeIndex - 1); });
-      if (nextBtn) nextBtn.addEventListener('click', (e) => { e.stopPropagation(); showSlide(activeIndex + 1); });
+      if (prevBtn) prevBtn.addEventListener('click', (e) => { e.stopPropagation(); goPrev(); });
+      if (nextBtn) nextBtn.addEventListener('click', (e) => { e.stopPropagation(); goNext(); });
 
       const openModal = () => {
           modal.classList.remove('opacity-0', 'pointer-events-none');
@@ -225,8 +261,8 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
       document.addEventListener('keydown', (e) => {
           if (modal.classList.contains('pointer-events-none')) return;
           if (e.key === 'Escape') closeModal();
-          if (e.key === 'ArrowLeft') showSlide(activeIndex - 1);
-          if (e.key === 'ArrowRight') showSlide(activeIndex + 1);
+          if (e.key === 'ArrowLeft') goPrev();
+          if (e.key === 'ArrowRight') goNext();
       });
 
       trigger.addEventListener('click', openModal);
