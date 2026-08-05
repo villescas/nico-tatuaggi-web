@@ -134,11 +134,11 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
                     </div>
                 ) : slide.kind === 'youtube' ? (
                     <div class="w-full max-w-4xl aspect-video h-auto bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5">
-                        <iframe data-src={slide.src} class="lazy-iframe w-full h-full border-none absolute inset-0" scrolling="no" allowtransparency="true" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                        <iframe data-src={slide.src} class="lazy-iframe w-full h-full border-none absolute inset-0" scrolling="no" allowtransparency="true" allow="autoplay; encrypted-media"></iframe>
                     </div>
                 ) : slide.kind === 'instagram' ? (
                     <div class="w-full max-w-[400px] h-[80%] max-h-[700px] bg-black rounded-lg overflow-hidden border border-white/10 shadow-2xl relative shadow-tattoo-gold/5">
-                        <iframe data-src={slide.src} class="lazy-iframe w-full h-full border-none absolute inset-0" scrolling="no" allowtransparency="true" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                        <iframe data-src={slide.src} class="lazy-iframe w-full h-full border-none absolute inset-0" scrolling="no" allowtransparency="true" allow="autoplay; encrypted-media"></iframe>
                     </div>
                 ) : (
                     <img src={slide.src} alt={titulo} loading="lazy" class="zoomable-image max-w-full max-h-full object-contain drop-shadow-2xl select-none [touch-action:none]" />
@@ -170,11 +170,11 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
     {/* Panel de info: ocupa solo lo que su contenido necesita (nunca le "roba"
         alto a la foto de arranque), con un tope + scroll propio para captions
         largas. Zona propia -- nunca se superpone a la foto. */}
-    <div class="info-panel relative flex-none max-h-[42vh] md:max-h-none md:flex-[0_0_32%] md:max-w-[440px] md:min-w-[320px] bg-[#0a0a0a] -mt-5 md:mt-0 rounded-t-[22px] md:rounded-none shadow-[0_-10px_30px_rgba(0,0,0,0.5)] md:shadow-none overflow-y-auto overscroll-contain md:flex md:items-center">
-        <div class="px-6 pt-3 pb-[calc(2rem+env(safe-area-inset-bottom))] md:px-10 md:py-14 w-full">
-            <div class="md:hidden w-9 h-1 rounded-full bg-white/20 mx-auto mb-5"></div>
+    <div class="info-panel relative flex-none max-h-[34vh] md:max-h-none md:flex-[0_0_32%] md:max-w-[440px] md:min-w-[320px] bg-[#0a0a0a] -mt-5 md:mt-0 rounded-t-[22px] md:rounded-none shadow-[0_-10px_30px_rgba(0,0,0,0.5)] md:shadow-none overflow-y-auto overscroll-contain md:flex md:items-center">
+        <div class="px-6 pt-2.5 pb-[calc(1.1rem+env(safe-area-inset-bottom))] md:px-10 md:py-14 w-full">
+            <div class="md:hidden w-9 h-1 rounded-full bg-white/20 mx-auto mb-3"></div>
 
-            <h4 class="font-display text-white text-base md:text-xl font-semibold leading-snug mb-4 md:mb-6">{titulo}</h4>
+            <h4 class="font-display text-white text-base md:text-xl font-semibold leading-snug mb-2.5 md:mb-6">{titulo}</h4>
 
             <div class="hidden md:block w-11 h-px bg-tattoo-gold/40 mb-6"></div>
 
@@ -184,7 +184,7 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
             </div>
 
             {tagsArray.length > 0 && (
-                <div class="flex flex-wrap gap-2 mt-5">
+                <div class="flex flex-wrap gap-2 mt-3">
                     {tagsArray.map(tag => (
                         <span class="text-[9px] font-bold text-white/50 border border-white/10 bg-white/5 px-2.5 py-1.5 rounded-md uppercase tracking-widest">{tag}</span>
                     ))}
