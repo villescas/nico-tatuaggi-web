@@ -471,6 +471,23 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
       // fix: before showing this one, forcibly hide any other modal that's
       // currently visible, however it got left open. Only one can ever be
       // interactive at a time.
+      // The active slide gets an inline `pointer-events: auto` from showSlide()
+      // (so its own controls/zoom work). That inline style has higher priority
+      // than the modal's own `pointer-events-none` class -- an ancestor being
+      // "none" does not strip an override a descendant set on itself. Closing
+      // the modal without clearing it left a full-screen, invisible-but-still-
+      // clickable slide sitting over the grid forever, silently swallowing the
+      // next click (this is why re-opening the tattoo you just closed did
+      // nothing, and very likely why other clicks nearby looked "stuck" too).
+      const clearSlideInlineStyles = (modalEl) => {
+          modalEl.querySelectorAll('.slide').forEach((el) => {
+              el.style.pointerEvents = 'none';
+              el.style.transition = 'none';
+              el.style.opacity = '0';
+              el.style.transform = 'translateX(0)';
+          });
+      };
+
       const closeOtherOpenModals = () => {
           document.querySelectorAll('[id^="modal-tattoo-"]').forEach((otherModal) => {
               if (otherModal === modal) return;
@@ -478,6 +495,7 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
               otherModal.classList.add('opacity-0', 'pointer-events-none');
               otherModal.querySelectorAll('video').forEach((v) => v.pause());
               otherModal.querySelectorAll('.lazy-iframe').forEach((f) => { if (f.src) f.src = ''; });
+              clearSlideInlineStyles(otherModal);
           });
       };
 
@@ -496,6 +514,7 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
               const iframe = el.querySelector('.lazy-iframe');
               if (iframe && iframe.src) iframe.src = '';
           });
+          clearSlideInlineStyles(modal);
       };
 
       closeBtn.addEventListener('click', closeModal);

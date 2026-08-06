@@ -65,22 +65,24 @@ if (tatuajes.length === 0) {
         <p class="text-tattoo-gold text-sm tracking-[0.3em] uppercase max-w-2xl mx-auto">Explora la galería completa de trabajos</p>
     </div>
 
-    {/* Filtros: chip con check que se activa -- estado y color nunca compiten (ver script) */}
+    {/* Filtros: chip con check que se activa -- estado y color nunca compiten (ver script).
+        El icono reserva su propio ancho via w-0/w-3.5 (no solo scale), asi el texto
+        queda realmente centrado cuando esta inactivo, no corrido por un hueco invisible. */}
     <div class="flex flex-wrap justify-center gap-3 mb-10 md:mb-16 filter-buttons">
-        <button class="filter-chip flex items-center gap-2 pl-4 pr-5 py-2.5 rounded-full border border-tattoo-gold bg-tattoo-gold text-black shadow-[0_0_20px_rgba(212,175,55,0.25)] transition-all duration-300 text-xs tracking-widest uppercase active-filter" data-filter="all">
-            <svg class="check-icon w-3.5 h-3.5 flex-shrink-0 transition-all duration-300 scale-100 opacity-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <button class="filter-chip flex items-center justify-center px-5 py-2.5 rounded-full border border-tattoo-gold bg-tattoo-gold text-black shadow-[0_0_20px_rgba(212,175,55,0.25)] transition-all duration-300 text-xs tracking-widest uppercase active-filter" data-filter="all">
+            <svg class="check-icon w-3.5 mr-2 h-3.5 flex-shrink-0 overflow-hidden transition-all duration-300 scale-100 opacity-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             <span>Todos</span>
         </button>
-        <button class="filter-chip flex items-center gap-2 pl-4 pr-5 py-2.5 rounded-full border border-tattoo-gold/25 text-tattoo-silver hover:border-tattoo-gold/50 hover:text-white transition-all duration-300 text-xs tracking-widest uppercase" data-filter="black and grey">
-            <svg class="check-icon w-3.5 h-3.5 flex-shrink-0 transition-all duration-300 scale-0 opacity-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <button class="filter-chip flex items-center justify-center px-5 py-2.5 rounded-full border border-tattoo-gold/25 text-tattoo-silver hover:border-tattoo-gold/50 hover:text-white transition-all duration-300 text-xs tracking-widest uppercase" data-filter="black and grey">
+            <svg class="check-icon w-0 mr-0 h-3.5 flex-shrink-0 overflow-hidden transition-all duration-300 scale-75 opacity-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             <span>Black &amp; Grey</span>
         </button>
-        <button class="filter-chip flex items-center gap-2 pl-4 pr-5 py-2.5 rounded-full border border-tattoo-gold/25 text-tattoo-silver hover:border-tattoo-gold/50 hover:text-white transition-all duration-300 text-xs tracking-widest uppercase" data-filter="cover up">
-            <svg class="check-icon w-3.5 h-3.5 flex-shrink-0 transition-all duration-300 scale-0 opacity-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <button class="filter-chip flex items-center justify-center px-5 py-2.5 rounded-full border border-tattoo-gold/25 text-tattoo-silver hover:border-tattoo-gold/50 hover:text-white transition-all duration-300 text-xs tracking-widest uppercase" data-filter="cover up">
+            <svg class="check-icon w-0 mr-0 h-3.5 flex-shrink-0 overflow-hidden transition-all duration-300 scale-75 opacity-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             <span>Cover Up</span>
         </button>
-        <button class="filter-chip flex items-center gap-2 pl-4 pr-5 py-2.5 rounded-full border border-tattoo-gold/25 text-tattoo-silver hover:border-tattoo-gold/50 hover:text-white transition-all duration-300 text-xs tracking-widest uppercase" data-filter="color">
-            <svg class="check-icon w-3.5 h-3.5 flex-shrink-0 transition-all duration-300 scale-0 opacity-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <button class="filter-chip flex items-center justify-center px-5 py-2.5 rounded-full border border-tattoo-gold/25 text-tattoo-silver hover:border-tattoo-gold/50 hover:text-white transition-all duration-300 text-xs tracking-widest uppercase" data-filter="color">
+            <svg class="check-icon w-0 mr-0 h-3.5 flex-shrink-0 overflow-hidden transition-all duration-300 scale-75 opacity-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             <span>Color</span>
         </button>
     </div>
@@ -127,9 +129,16 @@ if (tatuajes.length === 0) {
                 btn.classList.toggle('text-tattoo-silver', !isActive);
                 const check = btn.querySelector('.check-icon');
                 if (check) {
+                    // Width (not just scale) is what's toggled -- at inactive the
+                    // icon must take up zero layout space, or its reserved box
+                    // pushes the label off-center even while invisible.
+                    check.classList.toggle('w-3.5', isActive);
+                    check.classList.toggle('mr-2', isActive);
                     check.classList.toggle('scale-100', isActive);
                     check.classList.toggle('opacity-100', isActive);
-                    check.classList.toggle('scale-0', !isActive);
+                    check.classList.toggle('w-0', !isActive);
+                    check.classList.toggle('mr-0', !isActive);
+                    check.classList.toggle('scale-75', !isActive);
                     check.classList.toggle('opacity-0', !isActive);
                 }
             });
