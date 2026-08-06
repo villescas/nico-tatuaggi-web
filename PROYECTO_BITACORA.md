@@ -2,6 +2,8 @@
 
 Última actualización: 2026-08-01. Escrita porque se va a restaurar/formatear la compu de trabajo — esto es lo que hay que saber para retomar sin perder contexto.
 
+> **Nota (agosto 2026, sesión posterior):** hubo una sesión larga completa de rediseño del modal de galería y fixes de bugs reales (varios encontrados por el cliente en dispositivos reales) posterior a esta bitácora. Ver la sección **"Rediseño del modal de galería (Tattoo.astro) y limpieza relacionada"** al final de `DOCUMENTACION-PROYECTO.md` para el resumen completo, incluyendo qué quedó pendiente. Los ~103/51 trabajos de la sección 3 de abajo ya están todos publicados (`visible:true`) — esa parte de "pendiente" ya no aplica.
+
 ## 1. Qué es esto
 
 Sitio Astro (estático) + Directus headless CMS para el portfolio de Nico Tatuaggi (tatuador, Buenos Aires / Glasgow). Repo: `nico-tatuaggi-web`.
