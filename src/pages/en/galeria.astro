@@ -65,12 +65,24 @@ if (tatuajes.length === 0) {
         <p class="text-tattoo-gold text-sm tracking-[0.3em] uppercase max-w-2xl mx-auto">Explore the full gallery of works</p>
     </div>
 
-    {/* Filtros visuales usando Alpine o simple CSS/JS vanilla */}
-    <div class="flex flex-wrap justify-center gap-4 mb-10 md:mb-16 filter-buttons">
-        <button class="px-6 py-2 border border-tattoo-gold text-tattoo-gold hover:bg-tattoo-gold hover:text-black transition-colors text-xs tracking-widest uppercase active-filter" data-filter="all">All</button>
-        <button class="px-6 py-2 border border-tattoo-gold/30 text-tattoo-silver hover:border-tattoo-gold hover:text-tattoo-gold transition-colors text-xs tracking-widest uppercase" data-filter="black and grey">Black & Grey</button>
-        <button class="px-6 py-2 border border-tattoo-gold/30 text-tattoo-silver hover:border-tattoo-gold hover:text-tattoo-gold transition-colors text-xs tracking-widest uppercase" data-filter="cover up">Cover Up</button>
-        <button class="px-6 py-2 border border-tattoo-gold/30 text-tattoo-silver hover:border-tattoo-gold hover:text-tattoo-gold transition-colors text-xs tracking-widest uppercase" data-filter="color">Color</button>
+    {/* Filters: chip with a check that lights up -- state and color never fight (see script) */}
+    <div class="flex flex-wrap justify-center gap-3 mb-10 md:mb-16 filter-buttons">
+        <button class="filter-chip flex items-center gap-2 pl-4 pr-5 py-2.5 rounded-full border border-tattoo-gold bg-tattoo-gold text-black shadow-[0_0_20px_rgba(212,175,55,0.25)] transition-all duration-300 text-xs tracking-widest uppercase active-filter" data-filter="all">
+            <svg class="check-icon w-3.5 h-3.5 flex-shrink-0 transition-all duration-300 scale-100 opacity-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>All</span>
+        </button>
+        <button class="filter-chip flex items-center gap-2 pl-4 pr-5 py-2.5 rounded-full border border-tattoo-gold/25 text-tattoo-silver hover:border-tattoo-gold/50 hover:text-white transition-all duration-300 text-xs tracking-widest uppercase" data-filter="black and grey">
+            <svg class="check-icon w-3.5 h-3.5 flex-shrink-0 transition-all duration-300 scale-0 opacity-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Black &amp; Grey</span>
+        </button>
+        <button class="filter-chip flex items-center gap-2 pl-4 pr-5 py-2.5 rounded-full border border-tattoo-gold/25 text-tattoo-silver hover:border-tattoo-gold/50 hover:text-white transition-all duration-300 text-xs tracking-widest uppercase" data-filter="cover up">
+            <svg class="check-icon w-3.5 h-3.5 flex-shrink-0 transition-all duration-300 scale-0 opacity-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Cover Up</span>
+        </button>
+        <button class="filter-chip flex items-center gap-2 pl-4 pr-5 py-2.5 rounded-full border border-tattoo-gold/25 text-tattoo-silver hover:border-tattoo-gold/50 hover:text-white transition-all duration-300 text-xs tracking-widest uppercase" data-filter="color">
+            <svg class="check-icon w-3.5 h-3.5 flex-shrink-0 transition-all duration-300 scale-0 opacity-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Color</span>
+        </button>
     </div>
 
     <div class="columns-1 md:columns-2 lg:columns-4 gap-6 space-y-6 portfolio-grid">
@@ -98,17 +110,34 @@ if (tatuajes.length === 0) {
         const buttons = document.querySelectorAll('.filter-buttons button');
         const items = document.querySelectorAll('.tattoo-item');
 
+        // One toggle per button drives both the color state and the check icon
+        // together, off the same boolean -- so "active" and "inactive" text
+        // colors can never both apply at once (that's what made the active chip's
+        // text unreadable before: gold text and black text were being added at
+        // the same time and one silently won the cascade).
+        const setActiveButton = (activeButton) => {
+            buttons.forEach((btn) => {
+                const isActive = btn === activeButton;
+                btn.classList.toggle('active-filter', isActive);
+                btn.classList.toggle('border-tattoo-gold', isActive);
+                btn.classList.toggle('bg-tattoo-gold', isActive);
+                btn.classList.toggle('text-black', isActive);
+                btn.classList.toggle('shadow-[0_0_20px_rgba(212,175,55,0.25)]', isActive);
+                btn.classList.toggle('border-tattoo-gold/25', !isActive);
+                btn.classList.toggle('text-tattoo-silver', !isActive);
+                const check = btn.querySelector('.check-icon');
+                if (check) {
+                    check.classList.toggle('scale-100', isActive);
+                    check.classList.toggle('opacity-100', isActive);
+                    check.classList.toggle('scale-0', !isActive);
+                    check.classList.toggle('opacity-0', !isActive);
+                }
+            });
+        };
+
         buttons.forEach(button => {
             button.addEventListener('click', () => {
-                // 1. Remove active state properties from all filter buttons
-                buttons.forEach(btn => {
-                    btn.classList.remove('border-tattoo-gold', 'text-tattoo-gold', 'bg-tattoo-gold', 'text-black', 'active-filter');
-                    btn.classList.add('border-tattoo-gold/30', 'text-tattoo-silver');
-                });
-                
-                // 2. Inject active state CSS properties into the triggering button
-                button.classList.remove('border-tattoo-gold/30', 'text-tattoo-silver');
-                button.classList.add('border-tattoo-gold', 'text-tattoo-gold', 'bg-tattoo-gold', 'text-black', 'active-filter');
+                setActiveButton(button);
 
                 const filterValue = button.getAttribute('data-filter').toLowerCase();
 
