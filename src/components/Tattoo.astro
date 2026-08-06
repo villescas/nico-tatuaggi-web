@@ -464,7 +464,25 @@ const coverThumb = coverIsVideo ? (finalImageUrl || null) : (cover?.src || null)
       if (prevBtn) prevBtn.addEventListener('click', (e) => { e.stopPropagation(); goPrev(); });
       if (nextBtn) nextBtn.addEventListener('click', (e) => { e.stopPropagation(); goNext(); });
 
+      // Each tattoo's modal is wired by its own independent script instance,
+      // with no shared state -- nothing stopped two different triggers from
+      // ending up open at once (seen live: several modals stacked on top of
+      // each other after clicking a few grid images in a row). This is the
+      // fix: before showing this one, forcibly hide any other modal that's
+      // currently visible, however it got left open. Only one can ever be
+      // interactive at a time.
+      const closeOtherOpenModals = () => {
+          document.querySelectorAll('[id^="modal-tattoo-"]').forEach((otherModal) => {
+              if (otherModal === modal) return;
+              if (otherModal.classList.contains('pointer-events-none')) return;
+              otherModal.classList.add('opacity-0', 'pointer-events-none');
+              otherModal.querySelectorAll('video').forEach((v) => v.pause());
+              otherModal.querySelectorAll('.lazy-iframe').forEach((f) => { if (f.src) f.src = ''; });
+          });
+      };
+
       const openModal = () => {
+          closeOtherOpenModals();
           modal.classList.remove('opacity-0', 'pointer-events-none');
           document.body.style.overflow = 'hidden';
           showSlide(0);
