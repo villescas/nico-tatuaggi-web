@@ -109,8 +109,12 @@ const { directusUrl = import.meta.env.PUBLIC_DIRECTUS_URL || 'https://panel.nico
       if (!res.ok) return;
 
       const json = await res.json();
+      // "visible" manda: si lo prendieron a mano, se muestra, haya pasado
+      // la fecha o no (ej. viajes viejos que quieren dejar como historial).
+      // Este widget solo se encarga de que la etiqueta "actual" sea siempre
+      // correcta -- nunca de decidir por su cuenta qué ocultar.
       const items = (json.data || [])
-        .filter((d) => d.startDate && d.endDate && toDateOnly(d.endDate) >= today)
+        .filter((d) => d.startDate && d.endDate)
         .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
       if (items.length === 0) return;
