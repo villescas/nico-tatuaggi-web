@@ -27,7 +27,15 @@ try {
   const rawViajes = await fetchDirectus('destinations');
   if (rawViajes) {
       const viajesArray = Array.isArray(rawViajes) ? rawViajes : [];
-      viajes = viajesArray.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+      // El sitio es estático (SSG): esto corre solo en cada build, no por
+      // visita real. Sin este filtro, un viaje que ya terminó se queda
+      // pegado en "Próximos Destinos" -- y hasta con la etiqueta "UBICACIÓN
+      // ACTUAL" congelada -- hasta que alguien lo apague a mano en Directus.
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      viajes = viajesArray
+          .filter((v) => !v.endDate || new Date(v.endDate) >= today)
+          .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
   }
 
   // 2. Buscamos Novedades
